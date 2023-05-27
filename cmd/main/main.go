@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+    "github.com/koleaby4/next_movie_go/pkg/fileutils"
 )
 
 func init() {
@@ -33,6 +35,8 @@ func loadDotEnv() {
 }
 
 func getMoviesByRating() {
+    text := fileutils.GetFileContents("delete_me.txt")
+    fmt.Println(text)
 
 	url := "https://moviesminidatabase.p.rapidapi.com/movie/order/byRating/"
 
