@@ -3,13 +3,24 @@ package config
 import (
 	"errors"
 	"fmt"
+	"github.com/koleaby4/next_movie_go/internal/database"
+	"gorm.io/gorm"
 	"log"
 	"os"
 	"strings"
 )
 
 type Config struct {
-	DbDsn string
+	Db *gorm.DB
+}
+
+func SetDb(config Config, dsn string) {
+	db, err := database.New(dsn)
+	if err != nil {
+		log.Fatalln("error setting up db:", err)
+	}
+
+	config.Db = db
 }
 
 func GetDsn() (string, error) {
