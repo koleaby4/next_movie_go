@@ -3,13 +3,14 @@ package main
 import (
 	"github.com/koleaby4/next_movie_go/config"
 	"github.com/koleaby4/next_movie_go/internal/database"
+	"github.com/koleaby4/next_movie_go/internal/database/user"
 	"gorm.io/gorm"
 	"log"
 )
 
 func migrate(db *gorm.DB) {
 
-	if err := db.AutoMigrate(&database.User{}); err != nil {
+	if err := db.AutoMigrate(&user.User{}); err != nil {
 		log.Fatalln("error migrating users:", err)
 	}
 
@@ -23,10 +24,7 @@ func main() {
 		log.Fatalln("error fetching dsn:", err)
 	}
 
-	db, err := database.NewPostgres(dsn)
-	if err != nil {
-		log.Fatalln("error connecting to db:", err)
-	}
+	db := database.New(dsn)
 
 	migrate(db)
 

@@ -5,11 +5,11 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewPostgres(dsn string) (*gorm.DB, error) {
+func New(dsn string) *gorm.DB {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
-	return db, nil
+	return db
 }
