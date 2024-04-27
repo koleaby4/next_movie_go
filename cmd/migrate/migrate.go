@@ -23,7 +23,7 @@ func main() {
 		log.Fatalln("error fetching dsn:", err)
 	}
 
-	db, err := database.New(dsn)
+	db, err := database.NewPostgres(dsn)
 	if err != nil {
 		log.Fatalln("error connecting to db:", err)
 	}

@@ -15,7 +15,7 @@ type Config struct {
 }
 
 func SetDb(config Config, dsn string) {
-	db, err := database.New(dsn)
+	db, err := database.NewPostgres(dsn)
 	if err != nil {
 		log.Fatalln("error setting up db:", err)
 	}
