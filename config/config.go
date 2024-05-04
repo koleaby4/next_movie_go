@@ -8,8 +8,9 @@ import (
 	"strings"
 )
 
-type Config struct {
-	DbDsn string
+type AppConfig struct {
+	DbDsn      string
+	XPlexToken string
 }
 
 func GetDsn() (string, error) {
@@ -27,4 +28,12 @@ func GetDsn() (string, error) {
 	dsn = strings.Trim(dsn, `'`)
 	return dsn, nil
 
+}
+
+func GetXPlexToken() string {
+	userToken := os.Getenv("X-Plex-Token")
+	if userToken == "" {
+		log.Fatalln("env var X-Plex-Token not found")
+	}
+	return userToken
 }
