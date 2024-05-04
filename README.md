@@ -1,0 +1,1 @@
+https://api.themoviedb.org/3/tv/popular (see https://stackoverflow.com/questions/30652577/go-doing-a-get-request-and-building-the-querystring for detail)

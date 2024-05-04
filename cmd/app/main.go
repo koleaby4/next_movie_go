@@ -46,7 +46,7 @@ func playWithMoviesTable() {
 }
 
 func main() {
-	appToken := config.GetXPlexToken()
-	userToken := plexapi.GetUserToken(appToken)
-	fmt.Println("fetched temp Plex user token", userToken)
+	plexToken := config.GetXPlexToken()
+	userToken := plexapi.GetUserToken(plexToken)
+	fmt.Println("userToken", userToken)
 }
