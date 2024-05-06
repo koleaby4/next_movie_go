@@ -49,4 +49,5 @@ func main() {
 	plexToken := config.GetXPlexToken()
 	userToken := plexapi.GetUserToken(plexToken)
 	fmt.Println("userToken", userToken)
+	//plexapi.Do(userToken)
 }

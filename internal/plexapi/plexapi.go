@@ -2,7 +2,6 @@ package plexapi
 
 import (
 	"errors"
-	"github.com/koleaby4/next_movie_go/config"
 	"io"
 	"io/ioutil"
 	"log"
@@ -61,7 +60,7 @@ func GetUserToken(appToken string) string {
 	return string(body)
 }
 
-func Do() {
+func Do(userToken string) {
 
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://plex.tv/api/v2/user", nil)
@@ -75,7 +74,7 @@ func Do() {
 	query := req.URL.Query()
 	query.Add("X-Plex-Product", "next_movie_go")
 	query.Add("X-Plex-Client-Identifier", "4649f6f7-7bec-41bb-aa2b-ba6067c506e")
-	query.Add("X-Plex-Token", config.GetXPlexToken())
+	query.Add("X-Plex-Token", userToken)
 
 	res, err := client.Do(req)
 
