@@ -4,16 +4,18 @@
 
 package db
 
-import (
-	"github.com/jackc/pgx/v5/pgtype"
-)
-
 type Movie struct {
 	ID    string
 	Title string
 }
 
+type MoviesWatchedByUser struct {
+	UserID          int32
+	MovieID         string
+	ExperienceStars int32
+}
+
 type User struct {
-	ID    pgtype.Int4
+	ID    int32
 	Email string
 }
