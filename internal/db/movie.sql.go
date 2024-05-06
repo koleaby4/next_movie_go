@@ -9,23 +9,36 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createMovie = `-- name: CreateMovie :execresult
-insert into movies (id, title) values($1, $2)
+insert into movies (id, title, description, poster_url, trailer_url)
+values ($1, $2, $3, $4, $5)
 `
 
 type CreateMovieParams struct {
-	ID    string
-	Title string
+	ID          string
+	Title       string
+	Description string
+	PosterUrl   pgtype.Text
+	TrailerUrl  pgtype.Text
 }
 
 func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, createMovie, arg.ID, arg.Title)
+	return q.db.Exec(ctx, createMovie,
+		arg.ID,
+		arg.Title,
+		arg.Description,
+		arg.PosterUrl,
+		arg.TrailerUrl,
+	)
 }
 
 const deleteMovie = `-- name: DeleteMovie :exec
-delete from movies where id = $1
+delete
+from movies
+where id = $1
 `
 
 func (q *Queries) DeleteMovie(ctx context.Context, id string) error {
@@ -34,18 +47,26 @@ func (q *Queries) DeleteMovie(ctx context.Context, id string) error {
 }
 
 const getMovie = `-- name: GetMovie :one
-select id, title from movies where id = $1
+select id, title, description, poster_url, trailer_url
+from movies
+where id = $1
 `
 
 func (q *Queries) GetMovie(ctx context.Context, id string) (Movie, error) {
 	row := q.db.QueryRow(ctx, getMovie, id)
 	var i Movie
-	err := row.Scan(&i.ID, &i.Title)
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Description,
+		&i.PosterUrl,
+		&i.TrailerUrl,
+	)
 	return i, err
 }
 
 const listMovies = `-- name: ListMovies :many
-select id, title
+select id, title, description, poster_url, trailer_url
 from movies
 order by id
 `
@@ -59,7 +80,13 @@ func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
 	var items []Movie
 	for rows.Next() {
 		var i Movie
-		if err := rows.Scan(&i.ID, &i.Title); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.PosterUrl,
+			&i.TrailerUrl,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -71,7 +98,8 @@ func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
 }
 
 const searchMovies = `-- name: SearchMovies :many
-select id, title from movies
+select id, title, description, poster_url, trailer_url
+from movies
 where title like $1
 `
 
@@ -84,7 +112,13 @@ func (q *Queries) SearchMovies(ctx context.Context, title string) ([]Movie, erro
 	var items []Movie
 	for rows.Next() {
 		var i Movie
-		if err := rows.Scan(&i.ID, &i.Title); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.PosterUrl,
+			&i.TrailerUrl,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -95,12 +129,66 @@ func (q *Queries) SearchMovies(ctx context.Context, title string) ([]Movie, erro
 	return items, nil
 }
 
-const updateMovie = `-- name: UpdateMovie :exec
+const updateMovieDescription = `-- name: UpdateMovieDescription :exec
 update movies
-set title = $1 where id = $1
+set description = $2
+where id = $1
 `
 
-func (q *Queries) UpdateMovie(ctx context.Context, title string) error {
-	_, err := q.db.Exec(ctx, updateMovie, title)
+type UpdateMovieDescriptionParams struct {
+	ID          string
+	Description string
+}
+
+func (q *Queries) UpdateMovieDescription(ctx context.Context, arg UpdateMovieDescriptionParams) error {
+	_, err := q.db.Exec(ctx, updateMovieDescription, arg.ID, arg.Description)
+	return err
+}
+
+const updateMoviePosterUrl = `-- name: UpdateMoviePosterUrl :exec
+update movies
+set poster_url = $2
+where id = $1
+`
+
+type UpdateMoviePosterUrlParams struct {
+	ID        string
+	PosterUrl pgtype.Text
+}
+
+func (q *Queries) UpdateMoviePosterUrl(ctx context.Context, arg UpdateMoviePosterUrlParams) error {
+	_, err := q.db.Exec(ctx, updateMoviePosterUrl, arg.ID, arg.PosterUrl)
+	return err
+}
+
+const updateMovieTitle = `-- name: UpdateMovieTitle :exec
+update movies
+set title = $2
+where id = $1
+`
+
+type UpdateMovieTitleParams struct {
+	ID    string
+	Title string
+}
+
+func (q *Queries) UpdateMovieTitle(ctx context.Context, arg UpdateMovieTitleParams) error {
+	_, err := q.db.Exec(ctx, updateMovieTitle, arg.ID, arg.Title)
+	return err
+}
+
+const updateMovieTrailerUrl = `-- name: UpdateMovieTrailerUrl :exec
+update movies
+set trailer_url = $2
+where id = $1
+`
+
+type UpdateMovieTrailerUrlParams struct {
+	ID         string
+	TrailerUrl pgtype.Text
+}
+
+func (q *Queries) UpdateMovieTrailerUrl(ctx context.Context, arg UpdateMovieTrailerUrlParams) error {
+	_, err := q.db.Exec(ctx, updateMovieTrailerUrl, arg.ID, arg.TrailerUrl)
 	return err
 }
