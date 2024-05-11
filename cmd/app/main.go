@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/koleaby4/next_movie_go/config"
 	"github.com/koleaby4/next_movie_go/internal/db"
-	"github.com/koleaby4/next_movie_go/internal/plexapi"
+	"github.com/koleaby4/next_movie_go/internal/tmdb"
 	"log"
 )
 
@@ -46,19 +46,17 @@ func playWithMoviesTable() {
 }
 
 func main() {
-	plexToken := config.GetXPlexToken()
-	fmt.Println("plexToken", plexToken)
+	tmdbApiKey := config.GetTmdbApiKey()
+	fmt.Println("tmdbApiKey", tmdbApiKey)
 
-	userToken := plexapi.GetUserToken(plexToken)
-	fmt.Println("userToken", userToken)
-	movies, err := plexapi.GetNewestMovies(userToken, 0)
+	recentMovies, err := tmdb.GetRecentMovies(tmdbApiKey, 7)
 	if err != nil {
-		log.Fatalln("error getting newest movies", err)
+		log.Fatalln("error getting newest recentMovies", err)
 	}
 
-	fmt.Println("number of movies fetched:", len(movies))
+	fmt.Println("number of recentMovies fetched:", len(recentMovies))
 
-	for _, movie := range movies {
+	for _, movie := range recentMovies {
 		fmt.Println(movie.Title, movie.Rating)
 	}
 }

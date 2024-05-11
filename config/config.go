@@ -10,7 +10,7 @@ import (
 
 type AppConfig struct {
 	DbDsn      string
-	XPlexToken string
+	TmdbApiKey string
 }
 
 func GetDsn() (string, error) {
@@ -30,10 +30,10 @@ func GetDsn() (string, error) {
 
 }
 
-func GetXPlexToken() string {
-	userToken := os.Getenv("X-Plex-Token")
-	if userToken == "" {
-		log.Fatalln("env var X-Plex-Token not found")
+func GetTmdbApiKey() string {
+	token := os.Getenv("TMDB_API_KEY")
+	if token == "" {
+		log.Fatalln("env var TMDB_API_KEY not found")
 	}
-	return userToken
+	return token
 }
