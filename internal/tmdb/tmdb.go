@@ -57,19 +57,23 @@ func GetRecentMovies(apiKey string, minRating float64) ([]Movie, error) {
 	return results.Movies, nil
 }
 
-func EnrichMovies(apiKey string, movies []Movie) []Movie {
+func EnrichMoviesInfo(apiKey string, movies []Movie) []Movie {
 	wg := sync.WaitGroup{}
 	wg.Add(len(movies))
 
 	for i := range movies {
 		movie := &movies[i]
 		go addTrailerUrl(apiKey, movie, &wg)
+		expandPosterUrl(movie)
 	}
 	wg.Wait()
 
 	return movies
 }
 
+func expandPosterUrl(movie *Movie) {
+	movie.PosterURL = fmt.Sprintf("%s%s", imageBaseUrl, movie.PosterURL)
+}
 func addTrailerUrl(apiKey string, m *Movie, wg *sync.WaitGroup) {
 	defer wg.Done()
 
