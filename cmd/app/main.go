@@ -50,13 +50,14 @@ func main() {
 	fmt.Println("tmdbApiKey", tmdbApiKey)
 
 	recentMovies, err := tmdb.GetRecentMovies(tmdbApiKey, 7)
+	enrichedMovies := tmdb.EnrichMovies(tmdbApiKey, recentMovies)
 	if err != nil {
 		log.Fatalln("error getting newest recentMovies", err)
 	}
 
 	fmt.Println("number of recentMovies fetched:", len(recentMovies))
 
-	for _, movie := range recentMovies {
-		fmt.Println(movie.Title, movie.Rating)
+	for _, movie := range enrichedMovies {
+		fmt.Println(movie.Title, movie.Rating, movie.TrailerURL)
 	}
 }
