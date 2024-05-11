@@ -9,7 +9,6 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createMovie = `-- name: CreateMovie :execresult
@@ -21,8 +20,8 @@ type CreateMovieParams struct {
 	ID          string
 	Title       string
 	Description string
-	PosterUrl   pgtype.Text
-	TrailerUrl  pgtype.Text
+	PosterUrl   string
+	TrailerUrl  string
 }
 
 func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (pgconn.CommandTag, error) {
@@ -47,7 +46,7 @@ func (q *Queries) DeleteMovie(ctx context.Context, id string) error {
 }
 
 const getMovie = `-- name: GetMovie :one
-select id, title, description, poster_url, trailer_url
+select id, title, description, poster_url, trailer_url, rating
 from movies
 where id = $1
 `
@@ -61,12 +60,13 @@ func (q *Queries) GetMovie(ctx context.Context, id string) (Movie, error) {
 		&i.Description,
 		&i.PosterUrl,
 		&i.TrailerUrl,
+		&i.Rating,
 	)
 	return i, err
 }
 
 const listMovies = `-- name: ListMovies :many
-select id, title, description, poster_url, trailer_url
+select id, title, description, poster_url, trailer_url, rating
 from movies
 order by id
 `
@@ -86,6 +86,7 @@ func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
 			&i.Description,
 			&i.PosterUrl,
 			&i.TrailerUrl,
+			&i.Rating,
 		); err != nil {
 			return nil, err
 		}
@@ -98,7 +99,7 @@ func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
 }
 
 const searchMovies = `-- name: SearchMovies :many
-select id, title, description, poster_url, trailer_url
+select id, title, description, poster_url, trailer_url, rating
 from movies
 where title like $1
 `
@@ -118,6 +119,7 @@ func (q *Queries) SearchMovies(ctx context.Context, title string) ([]Movie, erro
 			&i.Description,
 			&i.PosterUrl,
 			&i.TrailerUrl,
+			&i.Rating,
 		); err != nil {
 			return nil, err
 		}
@@ -153,7 +155,7 @@ where id = $1
 
 type UpdateMoviePosterUrlParams struct {
 	ID        string
-	PosterUrl pgtype.Text
+	PosterUrl string
 }
 
 func (q *Queries) UpdateMoviePosterUrl(ctx context.Context, arg UpdateMoviePosterUrlParams) error {
@@ -185,7 +187,7 @@ where id = $1
 
 type UpdateMovieTrailerUrlParams struct {
 	ID         string
-	TrailerUrl pgtype.Text
+	TrailerUrl string
 }
 
 func (q *Queries) UpdateMovieTrailerUrl(ctx context.Context, arg UpdateMovieTrailerUrlParams) error {

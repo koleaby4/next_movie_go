@@ -4,16 +4,13 @@
 
 package db
 
-import (
-	"github.com/jackc/pgx/v5/pgtype"
-)
-
 type Movie struct {
 	ID          string
 	Title       string
 	Description string
-	PosterUrl   pgtype.Text
-	TrailerUrl  pgtype.Text
+	PosterUrl   string
+	TrailerUrl  string
+	Rating      float64
 }
 
 type MoviesWatchedByUser struct {
