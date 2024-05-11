@@ -47,7 +47,18 @@ func playWithMoviesTable() {
 
 func main() {
 	plexToken := config.GetXPlexToken()
+	fmt.Println("plexToken", plexToken)
+
 	userToken := plexapi.GetUserToken(plexToken)
 	fmt.Println("userToken", userToken)
-	//plexapi.Do(userToken)
+	movies, err := plexapi.GetNewestMovies(userToken, 0)
+	if err != nil {
+		log.Fatalln("error getting newest movies", err)
+	}
+
+	fmt.Println("number of movies fetched:", len(movies))
+
+	for _, movie := range movies {
+		fmt.Println(movie.Title, movie.Rating)
+	}
 }

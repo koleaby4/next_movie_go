@@ -1,39 +1,13 @@
 package plexapi
 
 import (
-	"errors"
+	"encoding/xml"
+	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"regexp"
 )
-
-func HttpGet(url string, headers map[string]string, data map[string]string) (string, error) {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-
-	if err != nil {
-		log.Fatalln("error constructing request", err)
-	}
-
-	for key, val := range headers {
-		req.Header.Add(key, val)
-	}
-
-	res, err := client.Do(req)
-
-	if err != nil {
-		return "", errors.New("error sending request: " + err.Error())
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return "", errors.New("error reading body:" + err.Error())
-	}
-	return string(body), nil
-
-}
 
 func GetUserToken(appToken string) string {
 	url := "http://hp-server2:32400/security/token?type=delegation&scope=all"
@@ -53,47 +27,60 @@ func GetUserToken(appToken string) string {
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		panic(err)
 	}
-	return string(body)
+
+	r := regexp.MustCompile(`token="([^"]*)"`)
+	token := r.FindStringSubmatch(string(body))
+
+	if len(token) < 1 {
+		log.Fatalln("error fetching token from response", string(body))
+	}
+	return token[1]
 }
 
-func Do(userToken string) {
+type MovieInfo struct {
+	Title      string  `xml:"title,attr"`
+	Summary    string  `xml:"summary,attr"`
+	PosterURL  string  `xml:"thumb,attr"`
+	TrailerURL string  `xml:"extras,attr"`
+	Rating     float64 `xml:"rating,attr"`
+}
 
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://plex.tv/api/v2/user", nil)
+type MediaContainer struct {
+	Movies []MovieInfo `xml:"Video"`
+}
 
+func GetNewestMovies(userTolen string, minRating float64) ([]MovieInfo, error) {
+	plexNewestUrl := "http://hp-server2:32400/library/sections/1/newest?X-Plex-Token=" + userTolen
+	resp, err := http.Get(plexNewestUrl)
 	if err != nil {
-		log.Fatalln("failed contacting plex.tv", err)
+		fmt.Println("Error:", err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return nil, err
 	}
 
-	req.Header.Add("accept", "application/json")
-
-	query := req.URL.Query()
-	query.Add("X-Plex-Product", "next_movie_go")
-	query.Add("X-Plex-Client-Identifier", "4649f6f7-7bec-41bb-aa2b-ba6067c506e")
-	query.Add("X-Plex-Token", userToken)
-
-	res, err := client.Do(req)
-
+	var fetchedMovies MediaContainer
+	err = xml.Unmarshal(body, &fetchedMovies)
 	if err != nil {
-		log.Fatalln("error doing request to Plex" + err.Error())
+		fmt.Println("Error:", err)
+		return nil, err
 	}
-	defer res.Body.Close()
 
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		log.Fatalln("error reading body" + err.Error())
+	var movies []MovieInfo
+
+	for _, movie := range fetchedMovies.Movies {
+		if movie.Rating >= minRating {
+			movies = append(movies, movie)
+		}
 	}
-	log.Println(string(body))
-
-	/*
-		$ curl -X GET https://plex.tv/api/v2/user \
-		  -H 'accept: application/json' \
-		  -d 'X-Plex-Product=My Cool Plex App' \
-		  -d 'X-Plex-Client-Identifier=<clientIdentifier>' \
-		  -d 'X-Plex-Token=<userToken>'
-	*/
+	return movies, nil
 }
