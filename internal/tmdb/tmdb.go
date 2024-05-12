@@ -21,7 +21,9 @@ type Movie struct {
 }
 
 type MovieSearchResults struct {
-	Movies []Movie `json:"results"`
+	Results    []Movie `json:"results"`
+	Page       int     `json:"page"`
+	TotalPages int     `json:"total_pages"`
 }
 
 type VideoResult struct {
@@ -36,26 +38,45 @@ type Config struct {
 	ApiKey  string
 }
 
+func GetMovies(cfg Config, url string) ([]Movie, error) {
+	page := 1
+	var movies []Movie
+	for {
+		url = fmt.Sprintf("%s&page=%d&api_key=%s", url, page, cfg.ApiKey)
+		resp, err := http.Get(url)
+		if err != nil {
+			return movies, err
+		}
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return movies, err
+		}
+
+		var pageResults MovieSearchResults
+		err = json.Unmarshal(body, &pageResults)
+		if err != nil {
+			return movies, err
+		}
+
+		movies = append(movies, pageResults.Results...)
+		if pageResults.Page >= pageResults.TotalPages {
+			break
+		}
+		page++
+	}
+	fmt.Println("number of movies fetched:", len(movies))
+	return movies, nil
+}
+
 func GetRecentMovies(cfg Config, minRating float64, releasedAfter time.Time) ([]Movie, error) {
-	url := fmt.Sprintf("%s/3/discover/movie?primary_release_date.gte=%v&vote_average.gte=%v&sort_by=release_date.desc&api_key=%v", cfg.BaseUrl, releasedAfter.Format("2006-01-02"), minRating, cfg.ApiKey)
-	resp, err := http.Get(url)
+	url := fmt.Sprintf("%s/3/discover/movie?primary_release_date.gte=%v&vote_average.gte=%v&sort_by=release_date.desc", cfg.BaseUrl, releasedAfter.Format("2006-01-02"), minRating)
+	movies, err := GetMovies(cfg, url)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var results MovieSearchResults
-	err = json.Unmarshal(body, &results)
-	if err != nil {
-		return nil, err
-	}
-
-	return results.Movies, nil
+	return movies, nil
 }
 
 func EnrichMoviesInfo(cfg Config, movies []Movie) []Movie {
@@ -87,18 +108,21 @@ func addTrailerUrl(cfg Config, movie *Movie, wg *sync.WaitGroup) {
 	videoResp, err := http.Get(videoUrl)
 	if err != nil {
 		log.Println("error fetching video url=", videoUrl, err)
+		return
 	}
 	defer videoResp.Body.Close()
 
 	videoBody, err := io.ReadAll(videoResp.Body)
 	if err != nil {
 		log.Println("error reading videoResp.Body", err)
+		return
 	}
 
 	var videoResult VideoResult
 	err = json.Unmarshal(videoBody, &videoResult)
 	if err != nil {
 		log.Println("error unmarshalling videoBody", err)
+		return
 	}
 
 	for _, video := range videoResult.Results {
@@ -129,5 +153,5 @@ func GetMostPopularMovies(cfg Config, minRating float64, page int) ([]Movie, err
 		return nil, err
 	}
 
-	return results.Movies, nil
+	return results.Results, nil
 }
