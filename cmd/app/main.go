@@ -7,6 +7,7 @@ import (
 	"github.com/koleaby4/next_movie_go/internal/db"
 	"github.com/koleaby4/next_movie_go/internal/tmdb"
 	"log"
+	"time"
 )
 
 func playWithUsersTable() {
@@ -46,7 +47,8 @@ func playWithMoviesTable() {
 }
 
 func playWithMostRecentMovies(cfg tmdb.Config, minRating float64) {
-	recentMovies, err := tmdb.GetRecentMovies(cfg, minRating, 1)
+	lastWeek := time.Now().AddDate(0, 0, -7)
+	recentMovies, err := tmdb.GetRecentMovies(cfg, minRating, lastWeek)
 	enrichedMovies := tmdb.EnrichMoviesInfo(cfg, recentMovies)
 	if err != nil {
 		log.Fatalln("error getting newest recentMovies", err)

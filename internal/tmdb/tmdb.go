@@ -36,9 +36,8 @@ type Config struct {
 	ApiKey  string
 }
 
-func GetRecentMovies(cfg Config, minRating float64, page int) ([]Movie, error) {
-	sevenDaysAgo := time.Now().AddDate(0, 0, -7).Format("2006-01-02")
-	url := fmt.Sprintf("%s/3/discover/movie?primary_release_date.gte=%v&vote_average.gte=%v&sort_by=release_date.desc&page=%v&api_key=%v", cfg.BaseUrl, sevenDaysAgo, minRating, page, cfg.ApiKey)
+func GetRecentMovies(cfg Config, minRating float64, releasedAfter time.Time) ([]Movie, error) {
+	url := fmt.Sprintf("%s/3/discover/movie?primary_release_date.gte=%v&vote_average.gte=%v&sort_by=release_date.desc&api_key=%v", cfg.BaseUrl, releasedAfter.Format("2006-01-02"), minRating, cfg.ApiKey)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
