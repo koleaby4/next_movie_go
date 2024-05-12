@@ -45,11 +45,8 @@ func playWithMoviesTable() {
 
 }
 
-func main() {
-	tmdbApiKey := config.GetTmdbApiKey()
-	fmt.Println("tmdbApiKey", tmdbApiKey)
-
-	recentMovies, err := tmdb.GetRecentMovies(tmdbApiKey, 7)
+func playWithMostRecentMovies(tmdbApiKey string, minRating float64) {
+	recentMovies, err := tmdb.GetRecentMovies(tmdbApiKey, minRating, 1)
 	enrichedMovies := tmdb.EnrichMoviesInfo(tmdbApiKey, recentMovies)
 	if err != nil {
 		log.Fatalln("error getting newest recentMovies", err)
@@ -58,6 +55,32 @@ func main() {
 	fmt.Println("number of recentMovies fetched:", len(recentMovies))
 
 	for _, movie := range enrichedMovies {
+		fmt.Println(movie.Title, movie.Rating, movie.PosterURL, movie.TrailerURL)
+	}
+
+}
+
+func main() {
+	tmdbApiKey := config.GetTmdbApiKey()
+	fmt.Println("tmdbApiKey", tmdbApiKey)
+
+	minRating := 7.0
+
+	//playWithMostRecentMovies(tmdbApiKey, minRating)
+
+	playWithMostPopularMovies(tmdbApiKey, minRating)
+}
+
+func playWithMostPopularMovies(tmdbApiKey string, minRating float64) {
+	mostPopularMovies, err := tmdb.GetMostPopularMovies(tmdbApiKey, minRating, 1)
+	mostPopularMovies = tmdb.EnrichMoviesInfo(tmdbApiKey, mostPopularMovies)
+
+	if err != nil {
+		log.Fatalln("error getting most popular movies", err)
+	}
+
+	fmt.Println("number of most popular movies fetched:", len(mostPopularMovies))
+	for _, movie := range mostPopularMovies {
 		fmt.Println(movie.Title, movie.Rating, movie.PosterURL, movie.TrailerURL)
 	}
 }

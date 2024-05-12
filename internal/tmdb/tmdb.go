@@ -32,11 +32,10 @@ type VideoResult struct {
 }
 
 var baseUrl = "https://api.themoviedb.org"
-var imageBaseUrl = "https://image.tmdb.org/t/p/original"
 
-func GetRecentMovies(apiKey string, minRating float64) ([]Movie, error) {
+func GetRecentMovies(apiKey string, minRating float64, page int) ([]Movie, error) {
 	sevenDaysAgo := time.Now().AddDate(0, 0, -7).Format("2006-01-02")
-	url := fmt.Sprintf("%s/3/discover/movie?primary_release_date.gte=%v&vote_average.gte=%v&sort_by=release_date.desc&api_key=%v", baseUrl, sevenDaysAgo, minRating, apiKey)
+	url := fmt.Sprintf("%s/3/discover/movie?primary_release_date.gte=%v&vote_average.gte=%v&sort_by=release_date.desc&page=%v&api_key=%v", baseUrl, sevenDaysAgo, minRating, page, apiKey)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -72,8 +71,13 @@ func EnrichMoviesInfo(apiKey string, movies []Movie) []Movie {
 }
 
 func expandPosterUrl(movie *Movie) {
-	movie.PosterURL = fmt.Sprintf("%s%s", imageBaseUrl, movie.PosterURL)
+	const imageBaseUrl = "https://image.tmdb.org/t/p/original"
+	if movie.PosterURL != "" {
+		movie.PosterURL = fmt.Sprintf("%s%s", imageBaseUrl, movie.PosterURL)
+	}
+
 }
+
 func addTrailerUrl(apiKey string, m *Movie, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -101,4 +105,27 @@ func addTrailerUrl(apiKey string, m *Movie, wg *sync.WaitGroup) {
 			break
 		}
 	}
+}
+
+func GetMostPopularMovies(apiKey string, minRating float64, page int) ([]Movie, error) {
+	url := fmt.Sprintf("%s/3/discover/movie?vote_average.gte=%v&sort_by=vote_average.desc&page=%v&api_key=%v", baseUrl, minRating, page, apiKey)
+	fmt.Println("url", url)
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var results MovieSearchResults
+	err = json.Unmarshal(body, &results)
+	if err != nil {
+		return nil, err
+	}
+
+	return results.Movies, nil
 }
