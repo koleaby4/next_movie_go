@@ -1,43 +1,27 @@
 -- name: GetMovie :one
-select *
+select id, title, overview, poster_url, trailer_url, rating
 from movies
 where id = $1;
 
 -- name: ListMovies :many
-select *
+select id, title, overview, poster_url, trailer_url, rating
 from movies
 order by id;
 
 -- name: CreateMovie :execresult
-insert into movies (id, title, description, poster_url, trailer_url)
-values ($1, $2, $3, $4, $5);
+insert into movies (id, title, overview, poster_url, trailer_url, rating, raw_data)
+values ($1, $2, $3, $4, $5, $6, $7)
+on conflict (id) do nothing;
 
--- name: DeleteMovie :exec
-delete
-from movies
-where id = $1;
 
--- name: UpdateMovieTitle :exec
+-- name: UpdateMovie :execresult
 update movies
-set title = $2
+set overview    = $2,
+    title       = $3,
+    overview    = $4,
+    poster_url  = $5,
+    trailer_url = $6,
+    rating      = $7,
+    raw_data    = $8,
+    created_at  = NOW()
 where id = $1;
-
--- name: UpdateMovieDescription :exec
-update movies
-set description = $2
-where id = $1;
-
--- name: UpdateMoviePosterUrl :exec
-update movies
-set poster_url = $2
-where id = $1;
-
--- name: UpdateMovieTrailerUrl :exec
-update movies
-set trailer_url = $2
-where id = $1;
-
--- name: SearchMovies :many
-select *
-from movies
-where title like $1;

@@ -4,13 +4,20 @@
 
 package db
 
+import (
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
 type Movie struct {
 	ID          string
 	Title       string
-	Description string
+	ReleaseDate string
+	Overview    string
 	PosterUrl   string
 	TrailerUrl  string
 	Rating      float64
+	RawData     string
+	CreatedAt   pgtype.Timestamp
 }
 
 type MoviesWatchedByUser struct {
