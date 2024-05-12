@@ -31,11 +31,14 @@ type VideoResult struct {
 	} `json:"results"`
 }
 
-var baseUrl = "https://api.themoviedb.org"
+type Config struct {
+	BaseUrl string
+	ApiKey  string
+}
 
-func GetRecentMovies(apiKey string, minRating float64, page int) ([]Movie, error) {
+func GetRecentMovies(cfg Config, minRating float64, page int) ([]Movie, error) {
 	sevenDaysAgo := time.Now().AddDate(0, 0, -7).Format("2006-01-02")
-	url := fmt.Sprintf("%s/3/discover/movie?primary_release_date.gte=%v&vote_average.gte=%v&sort_by=release_date.desc&page=%v&api_key=%v", baseUrl, sevenDaysAgo, minRating, page, apiKey)
+	url := fmt.Sprintf("%s/3/discover/movie?primary_release_date.gte=%v&vote_average.gte=%v&sort_by=release_date.desc&page=%v&api_key=%v", cfg.BaseUrl, sevenDaysAgo, minRating, page, cfg.ApiKey)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -56,13 +59,13 @@ func GetRecentMovies(apiKey string, minRating float64, page int) ([]Movie, error
 	return results.Movies, nil
 }
 
-func EnrichMoviesInfo(apiKey string, movies []Movie) []Movie {
+func EnrichMoviesInfo(cfg Config, movies []Movie) []Movie {
 	wg := sync.WaitGroup{}
 	wg.Add(len(movies))
 
 	for i := range movies {
 		movie := &movies[i]
-		go addTrailerUrl(apiKey, movie, &wg)
+		go addTrailerUrl(cfg, movie, &wg)
 		expandPosterUrl(movie)
 	}
 	wg.Wait()
@@ -78,10 +81,10 @@ func expandPosterUrl(movie *Movie) {
 
 }
 
-func addTrailerUrl(apiKey string, m *Movie, wg *sync.WaitGroup) {
+func addTrailerUrl(cfg Config, movie *Movie, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	videoUrl := fmt.Sprintf("%s/3/movie/%d/videos?api_key=%s", baseUrl, m.Id, apiKey)
+	videoUrl := fmt.Sprintf("%s/3/movie/%d/videos?api_key=%s", cfg.BaseUrl, movie.Id, cfg.ApiKey)
 	videoResp, err := http.Get(videoUrl)
 	if err != nil {
 		log.Println("error fetching video url=", videoUrl, err)
@@ -101,14 +104,14 @@ func addTrailerUrl(apiKey string, m *Movie, wg *sync.WaitGroup) {
 
 	for _, video := range videoResult.Results {
 		if video.Type == "Trailer" {
-			m.TrailerURL = fmt.Sprintf("https://www.youtube.com/watch?v=%s", video.Key)
+			movie.TrailerURL = fmt.Sprintf("https://www.youtube.com/watch?v=%s", video.Key)
 			break
 		}
 	}
 }
 
-func GetMostPopularMovies(apiKey string, minRating float64, page int) ([]Movie, error) {
-	url := fmt.Sprintf("%s/3/discover/movie?vote_average.gte=%v&sort_by=vote_average.desc&page=%v&api_key=%v", baseUrl, minRating, page, apiKey)
+func GetMostPopularMovies(cfg Config, minRating float64, page int) ([]Movie, error) {
+	url := fmt.Sprintf("%s/3/discover/movie?vote_average.gte=%v&sort_by=vote_average.desc&page=%v&api_key=%v", cfg.BaseUrl, minRating, page, cfg.ApiKey)
 	fmt.Println("url", url)
 	resp, err := http.Get(url)
 	if err != nil {

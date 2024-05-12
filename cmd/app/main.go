@@ -45,9 +45,9 @@ func playWithMoviesTable() {
 
 }
 
-func playWithMostRecentMovies(tmdbApiKey string, minRating float64) {
-	recentMovies, err := tmdb.GetRecentMovies(tmdbApiKey, minRating, 1)
-	enrichedMovies := tmdb.EnrichMoviesInfo(tmdbApiKey, recentMovies)
+func playWithMostRecentMovies(cfg tmdb.Config, minRating float64) {
+	recentMovies, err := tmdb.GetRecentMovies(cfg, minRating, 1)
+	enrichedMovies := tmdb.EnrichMoviesInfo(cfg, recentMovies)
 	if err != nil {
 		log.Fatalln("error getting newest recentMovies", err)
 	}
@@ -61,19 +61,26 @@ func playWithMostRecentMovies(tmdbApiKey string, minRating float64) {
 }
 
 func main() {
-	tmdbApiKey := config.GetTmdbApiKey()
-	fmt.Println("tmdbApiKey", tmdbApiKey)
+	tmdbConfig := tmdb.Config{
+		BaseUrl: "https://api.themoviedb.org",
+		ApiKey:  config.GetTmdbApiKey(),
+	}
+
+	appConfig := config.AppConfig{
+		Tmdb: tmdbConfig,
+	}
+	fmt.Println("tmdbApiKey", appConfig.Tmdb.ApiKey)
 
 	minRating := 7.0
 
-	//playWithMostRecentMovies(tmdbApiKey, minRating)
-
-	playWithMostPopularMovies(tmdbApiKey, minRating)
+	playWithMostRecentMovies(appConfig.Tmdb, minRating)
+	fmt.Println("=====================================")
+	playWithMostPopularMovies(appConfig.Tmdb, minRating)
 }
 
-func playWithMostPopularMovies(tmdbApiKey string, minRating float64) {
-	mostPopularMovies, err := tmdb.GetMostPopularMovies(tmdbApiKey, minRating, 1)
-	mostPopularMovies = tmdb.EnrichMoviesInfo(tmdbApiKey, mostPopularMovies)
+func playWithMostPopularMovies(cfg tmdb.Config, minRating float64) {
+	mostPopularMovies, err := tmdb.GetMostPopularMovies(cfg, minRating, 1)
+	mostPopularMovies = tmdb.EnrichMoviesInfo(cfg, mostPopularMovies)
 
 	if err != nil {
 		log.Fatalln("error getting most popular movies", err)

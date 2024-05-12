@@ -3,14 +3,15 @@ package config
 import (
 	"errors"
 	"fmt"
+	"github.com/koleaby4/next_movie_go/internal/tmdb"
 	"log"
 	"os"
 	"strings"
 )
 
 type AppConfig struct {
-	DbDsn      string
-	TmdbApiKey string
+	DbDsn string
+	Tmdb  tmdb.Config
 }
 
 func GetDsn() (string, error) {
