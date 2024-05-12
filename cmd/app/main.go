@@ -48,7 +48,7 @@ func playWithMoviesTable() {
 
 func playWithMostRecentMovies(cfg tmdb.Config, minRating float64) {
 	lastWeek := time.Now().AddDate(0, 0, -7)
-	recentMovies, err := tmdb.GetRecentMovies(cfg, minRating, lastWeek)
+	recentMovies, err := tmdb.GetRecentMovies(cfg, lastWeek, time.Now(), minRating)
 	enrichedMovies := tmdb.EnrichMoviesInfo(cfg, recentMovies)
 	if err != nil {
 		log.Fatalln("error getting newest recentMovies", err)
@@ -77,7 +77,7 @@ func main() {
 
 	playWithMostRecentMovies(appConfig.Tmdb, minRating)
 	fmt.Println("=====================================")
-	playWithMostPopularMovies(appConfig.Tmdb, minRating)
+	//playWithMostPopularMovies(appConfig.Tmdb, minRating)
 }
 
 func playWithMostPopularMovies(cfg tmdb.Config, minRating float64) {

@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -38,12 +39,23 @@ type Config struct {
 	ApiKey  string
 }
 
-func GetMovies(cfg Config, url string) ([]Movie, error) {
+func GetMovies(cfg Config, prefixUrl string) ([]Movie, error) {
 	page := 1
 	var movies []Movie
+	var url string
+
 	for {
-		url = fmt.Sprintf("%s&page=%d&api_key=%s", url, page, cfg.ApiKey)
+		tail := fmt.Sprintf("page=%d&api_key=%s", page, cfg.ApiKey)
+
+		if strings.Contains(prefixUrl, "?") {
+			url = prefixUrl + "&" + tail
+		} else {
+			url = prefixUrl + "?" + tail
+		}
+
+		log.Println("url", url)
 		resp, err := http.Get(url)
+
 		if err != nil {
 			return movies, err
 		}
@@ -70,8 +82,11 @@ func GetMovies(cfg Config, url string) ([]Movie, error) {
 	return movies, nil
 }
 
-func GetRecentMovies(cfg Config, minRating float64, releasedAfter time.Time) ([]Movie, error) {
-	url := fmt.Sprintf("%s/3/discover/movie?primary_release_date.gte=%v&vote_average.gte=%v&sort_by=release_date.desc", cfg.BaseUrl, releasedAfter.Format("2006-01-02"), minRating)
+func GetRecentMovies(cfg Config, fromDate time.Time, toDate time.Time, minRating float64) ([]Movie, error) {
+	from := fromDate.Format("2006-01-02")
+	to := toDate.Format("2006-01-02")
+	url := fmt.Sprintf("%s/3/discover/movie?primary_release_date.gte=%v&primary_release_date.lte=%v&vote_average.gte=%v&sort_by=release_date.desc", cfg.BaseUrl, from, to, minRating)
+	fmt.Println("GetRecentMovies: url->", url)
 	movies, err := GetMovies(cfg, url)
 	if err != nil {
 		return nil, err
