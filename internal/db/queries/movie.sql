@@ -1,27 +1,33 @@
 -- name: GetMovie :one
-select id, title, overview, poster_url, trailer_url, rating
+select id,
+       title,
+       release_date,
+       overview,
+       rating,
+       poster_url,
+       trailer_url,
+       raw_data
 from movies
 where id = $1;
 
 -- name: ListMovies :many
-select id, title, overview, poster_url, trailer_url, rating
+select id,
+       title,
+       release_date,
+       overview,
+       rating,
+       poster_url,
+       trailer_url,
+       raw_data
 from movies
-order by id;
+order by release_date desc;
 
--- name: CreateMovie :execresult
-insert into movies (id, title, overview, poster_url, trailer_url, rating, raw_data)
-values ($1, $2, $3, $4, $5, $6, $7)
+-- name: InsertMovie :execresult
+insert into movies (id, title, release_date, overview, rating, poster_url, trailer_url, raw_data)
+values ($1, $2, $3, $4, $5, $6, $7, $8)
 on conflict (id) do nothing;
 
 
--- name: UpdateMovie :execresult
-update movies
-set overview    = $2,
-    title       = $3,
-    overview    = $4,
-    poster_url  = $5,
-    trailer_url = $6,
-    rating      = $7,
-    raw_data    = $8,
-    created_at  = NOW()
-where id = $1;
+-- name: GetLastKnownReleaseDate :one
+select max(release_date) as release_date
+from movies;

@@ -7,6 +7,7 @@ import (
 	"github.com/koleaby4/next_movie_go/internal/db"
 	"github.com/koleaby4/next_movie_go/internal/tmdb"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -36,30 +37,72 @@ func playWithMoviesTable() {
 	defer conn.Close(ctx)
 
 	queries := db.New(conn)
-	matrixResult, err := queries.CreateMovie(ctx, db.CreateMovieParams{ID: "abc", Title: "Matrix"})
+	matrixResult, err := queries.InsertMovie(ctx, db.InsertMovieParams{ID: "abc", Title: "Matrix"})
 	if err != nil {
 		return
 	}
 	log.Println("movie matrixResult:", matrixResult)
 
 	fmt.Println("finished playWithMoviesTable")
-
 }
 
-func playWithMostRecentMovies(cfg tmdb.Config, minRating float64) {
-	lastWeek := time.Now().AddDate(0, 0, -7)
-	recentMovies, err := tmdb.GetRecentMovies(cfg, lastWeek, time.Now(), minRating)
-	enrichedMovies := tmdb.EnrichMoviesInfo(cfg, recentMovies)
+func LoadGoodMovies(queries *db.Queries, cfg tmdb.Config, ctx context.Context) {
+	var from time.Time
+	latestLoadedReleaseDate, err := queries.GetLastKnownReleaseDate(context.Background())
 	if err != nil {
-		log.Fatalln("error getting newest recentMovies", err)
+		log.Println("error getting latest inserted date", err)
+		from = time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)
+	} else {
+		releaseDate, ok := latestLoadedReleaseDate.(string)
+		if !ok {
+			log.Println("error casting latest inserted date to string", latestLoadedReleaseDate)
+		}
+		from, err = time.Parse("2006-01-02", releaseDate)
+		if err != nil {
+			fmt.Println("error parsing date=", err)
+		}
 	}
 
-	fmt.Println("number of recentMovies fetched:", len(recentMovies))
+	log.Println("latestLoadedReleaseDate", from)
+	panic("boom!")
 
-	for _, movie := range enrichedMovies {
-		fmt.Println(movie.Title, movie.Rating, movie.PosterURL, movie.TrailerURL)
+	const minRating = 7.0
+
+	to := from.AddDate(0, 0, 1)
+
+	var counter int
+	for counter < 1 {
+		recentMovies, err := tmdb.GetRecentMovies(cfg, from.Format("2006-01-02"), to.Format("2006-01-02"), minRating)
+		enrichedMovies := tmdb.EnrichMoviesInfo(cfg, recentMovies)
+		if err != nil {
+			log.Fatalln("error getting newest recentMovies", err)
+		}
+
+		from = to
+		to = from.AddDate(0, 0, 1)
+
+		fmt.Println("number of recentMovies fetched:", len(recentMovies))
+
+		for _, movie := range enrichedMovies {
+			data := db.InsertMovieParams{
+				ID:         strconv.Itoa(movie.Id),
+				Title:      movie.Title,
+				Overview:   movie.Overview,
+				PosterUrl:  movie.PosterURL,
+				TrailerUrl: movie.TrailerURL,
+				Rating:     movie.Rating,
+				RawData:    movie.RawData,
+			}
+
+			saveResult, err := queries.InsertMovie(ctx, data)
+			if err != nil {
+				log.Println("error persisting movie=%v. err=%v", data, err)
+			}
+			log.Println("movie persisted:", saveResult)
+			counter++
+		}
+
 	}
-
 }
 
 func main() {
@@ -71,11 +114,14 @@ func main() {
 	appConfig := config.AppConfig{
 		Tmdb: tmdbConfig,
 	}
-	fmt.Println("tmdbApiKey", appConfig.Tmdb.ApiKey)
 
-	minRating := 7.0
+	ctx := context.Background()
+	conn := db.NewConnection("", ctx)
+	defer conn.Close(ctx)
 
-	playWithMostRecentMovies(appConfig.Tmdb, minRating)
+	queries := db.New(conn)
+
+	LoadGoodMovies(queries, appConfig.Tmdb, ctx)
 	fmt.Println("=====================================")
 	//playWithMostPopularMovies(appConfig.Tmdb, minRating)
 }

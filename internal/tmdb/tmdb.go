@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"strings"
 	"sync"
-	"time"
 )
 
 type Movie struct {
@@ -19,6 +18,7 @@ type Movie struct {
 	Rating      float64 `json:"vote_average"`
 	PosterURL   string  `json:"poster_path"`
 	TrailerURL  string  `json:"trailer_path"`
+	RawData     string  `json:"-"`
 }
 
 type MovieSearchResults struct {
@@ -72,6 +72,14 @@ func GetMovies(cfg Config, prefixUrl string) ([]Movie, error) {
 			return movies, err
 		}
 
+		for i := range pageResults.Results {
+			rawData, err := json.Marshal(pageResults.Results[i])
+			if err != nil {
+				return movies, err
+			}
+			pageResults.Results[i].RawData = string(rawData)
+		}
+
 		movies = append(movies, pageResults.Results...)
 		if pageResults.Page >= pageResults.TotalPages {
 			break
@@ -82,9 +90,7 @@ func GetMovies(cfg Config, prefixUrl string) ([]Movie, error) {
 	return movies, nil
 }
 
-func GetRecentMovies(cfg Config, fromDate time.Time, toDate time.Time, minRating float64) ([]Movie, error) {
-	from := fromDate.Format("2006-01-02")
-	to := toDate.Format("2006-01-02")
+func GetRecentMovies(cfg Config, from string, to string, minRating float64) ([]Movie, error) {
 	url := fmt.Sprintf("%s/3/discover/movie?primary_release_date.gte=%v&primary_release_date.lte=%v&vote_average.gte=%v&sort_by=release_date.desc", cfg.BaseUrl, from, to, minRating)
 	fmt.Println("GetRecentMovies: url->", url)
 	movies, err := GetMovies(cfg, url)

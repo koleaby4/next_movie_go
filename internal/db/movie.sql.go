@@ -11,47 +11,40 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-const createMovie = `-- name: CreateMovie :execresult
-insert into movies (id, title, overview, poster_url, trailer_url, rating, raw_data)
-values ($1, $2, $3, $4, $5, $6, $7)
-on conflict (id) do nothing
+const getLastKnownReleaseDate = `-- name: GetLastKnownReleaseDate :one
+select max(release_date) as release_date
+from movies
 `
 
-type CreateMovieParams struct {
-	ID         string
-	Title      string
-	Overview   string
-	PosterUrl  string
-	TrailerUrl string
-	Rating     float64
-	RawData    string
-}
-
-func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, createMovie,
-		arg.ID,
-		arg.Title,
-		arg.Overview,
-		arg.PosterUrl,
-		arg.TrailerUrl,
-		arg.Rating,
-		arg.RawData,
-	)
+func (q *Queries) GetLastKnownReleaseDate(ctx context.Context) (interface{}, error) {
+	row := q.db.QueryRow(ctx, getLastKnownReleaseDate)
+	var release_date interface{}
+	err := row.Scan(&release_date)
+	return release_date, err
 }
 
 const getMovie = `-- name: GetMovie :one
-select id, title, overview, poster_url, trailer_url, rating
+select id,
+       title,
+       release_date,
+       overview,
+       rating,
+       poster_url,
+       trailer_url,
+       raw_data
 from movies
 where id = $1
 `
 
 type GetMovieRow struct {
-	ID         string
-	Title      string
-	Overview   string
-	PosterUrl  string
-	TrailerUrl string
-	Rating     float64
+	ID          string
+	Title       string
+	ReleaseDate string
+	Overview    string
+	Rating      float64
+	PosterUrl   string
+	TrailerUrl  string
+	RawData     string
 }
 
 func (q *Queries) GetMovie(ctx context.Context, id string) (GetMovieRow, error) {
@@ -60,27 +53,68 @@ func (q *Queries) GetMovie(ctx context.Context, id string) (GetMovieRow, error) 
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
+		&i.ReleaseDate,
 		&i.Overview,
+		&i.Rating,
 		&i.PosterUrl,
 		&i.TrailerUrl,
-		&i.Rating,
+		&i.RawData,
 	)
 	return i, err
 }
 
+const insertMovie = `-- name: InsertMovie :execresult
+insert into movies (id, title, release_date, overview, rating, poster_url, trailer_url, raw_data)
+values ($1, $2, $3, $4, $5, $6, $7, $8)
+on conflict (id) do nothing
+`
+
+type InsertMovieParams struct {
+	ID          string
+	Title       string
+	ReleaseDate string
+	Overview    string
+	Rating      float64
+	PosterUrl   string
+	TrailerUrl  string
+	RawData     string
+}
+
+func (q *Queries) InsertMovie(ctx context.Context, arg InsertMovieParams) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, insertMovie,
+		arg.ID,
+		arg.Title,
+		arg.ReleaseDate,
+		arg.Overview,
+		arg.Rating,
+		arg.PosterUrl,
+		arg.TrailerUrl,
+		arg.RawData,
+	)
+}
+
 const listMovies = `-- name: ListMovies :many
-select id, title, overview, poster_url, trailer_url, rating
+select id,
+       title,
+       release_date,
+       overview,
+       rating,
+       poster_url,
+       trailer_url,
+       raw_data
 from movies
-order by id
+order by release_date desc
 `
 
 type ListMoviesRow struct {
-	ID         string
-	Title      string
-	Overview   string
-	PosterUrl  string
-	TrailerUrl string
-	Rating     float64
+	ID          string
+	Title       string
+	ReleaseDate string
+	Overview    string
+	Rating      float64
+	PosterUrl   string
+	TrailerUrl  string
+	RawData     string
 }
 
 func (q *Queries) ListMovies(ctx context.Context) ([]ListMoviesRow, error) {
@@ -95,10 +129,12 @@ func (q *Queries) ListMovies(ctx context.Context) ([]ListMoviesRow, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
+			&i.ReleaseDate,
 			&i.Overview,
+			&i.Rating,
 			&i.PosterUrl,
 			&i.TrailerUrl,
-			&i.Rating,
+			&i.RawData,
 		); err != nil {
 			return nil, err
 		}
@@ -108,41 +144,4 @@ func (q *Queries) ListMovies(ctx context.Context) ([]ListMoviesRow, error) {
 		return nil, err
 	}
 	return items, nil
-}
-
-const updateMovie = `-- name: UpdateMovie :execresult
-update movies
-set overview    = $2,
-    title       = $3,
-    overview    = $4,
-    poster_url  = $5,
-    trailer_url = $6,
-    rating      = $7,
-    raw_data    = $8,
-    created_at  = NOW()
-where id = $1
-`
-
-type UpdateMovieParams struct {
-	ID         string
-	Overview   string
-	Title      string
-	Overview_2 string
-	PosterUrl  string
-	TrailerUrl string
-	Rating     float64
-	RawData    string
-}
-
-func (q *Queries) UpdateMovie(ctx context.Context, arg UpdateMovieParams) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, updateMovie,
-		arg.ID,
-		arg.Overview,
-		arg.Title,
-		arg.Overview_2,
-		arg.PosterUrl,
-		arg.TrailerUrl,
-		arg.Rating,
-		arg.RawData,
-	)
 }
