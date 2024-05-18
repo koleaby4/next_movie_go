@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 )
 
 type Movie struct {
@@ -87,12 +88,13 @@ func GetMovies(cfg Config, prefixUrl string) ([]Movie, error) {
 		page++
 	}
 	fmt.Println("number of movies fetched:", len(movies))
-	return movies, nil
+	return EnrichMoviesInfo(cfg, movies), nil
 }
 
-func GetRecentMovies(cfg Config, from string, to string, minRating float64) ([]Movie, error) {
-	url := fmt.Sprintf("%s/3/discover/movie?primary_release_date.gte=%v&primary_release_date.lte=%v&vote_average.gte=%v&sort_by=release_date.desc", cfg.BaseUrl, from, to, minRating)
-	fmt.Println("GetRecentMovies: url->", url)
+func GetMoviesReleasedBetween(cfg Config, from time.Time, to time.Time, minRating float64) ([]Movie, error) {
+	urlPattern := "%s/discover/movie?primary_release_date.gte=%v&primary_release_date.lte=%v&vote_average.gte=%v&sort_by=release_date.desc"
+	url := fmt.Sprintf(urlPattern, cfg.BaseUrl, from.Format("2006-01-02"), to.Format("2006-01-02"), minRating)
+
 	movies, err := GetMovies(cfg, url)
 	if err != nil {
 		return nil, err
@@ -115,27 +117,25 @@ func EnrichMoviesInfo(cfg Config, movies []Movie) []Movie {
 }
 
 func expandPosterUrl(movie *Movie) {
-	const imageBaseUrl = "https://image.tmdb.org/t/p/original"
 	if movie.PosterURL != "" {
-		movie.PosterURL = fmt.Sprintf("%s%s", imageBaseUrl, movie.PosterURL)
+		movie.PosterURL = "https://image.tmdb.org/t/p/original" + "/" + strings.Trim(movie.PosterURL, "/")
 	}
-
 }
 
 func addTrailerUrl(cfg Config, movie *Movie, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	videoUrl := fmt.Sprintf("%s/3/movie/%d/videos?api_key=%s", cfg.BaseUrl, movie.Id, cfg.ApiKey)
-	videoResp, err := http.Get(videoUrl)
+	videosUrl := fmt.Sprintf("%s/movie/%d/videos?api_key=%s", cfg.BaseUrl, movie.Id, cfg.ApiKey)
+	videoResp, err := http.Get(videosUrl)
 	if err != nil {
-		log.Println("error fetching video url=", videoUrl, err)
+		log.Println("error fetching video url=", videosUrl, err)
 		return
 	}
 	defer videoResp.Body.Close()
 
 	videoBody, err := io.ReadAll(videoResp.Body)
 	if err != nil {
-		log.Println("error reading videoResp.Body", err)
+		log.Printf("error reading videoResp.Body for videosUrl=%v, err=%v\n", videosUrl, err)
 		return
 	}
 
@@ -155,24 +155,6 @@ func addTrailerUrl(cfg Config, movie *Movie, wg *sync.WaitGroup) {
 }
 
 func GetMostPopularMovies(cfg Config, minRating float64, page int) ([]Movie, error) {
-	url := fmt.Sprintf("%s/3/discover/movie?vote_average.gte=%v&sort_by=vote_average.desc&page=%v&api_key=%v", cfg.BaseUrl, minRating, page, cfg.ApiKey)
-	fmt.Println("url", url)
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var results MovieSearchResults
-	err = json.Unmarshal(body, &results)
-	if err != nil {
-		return nil, err
-	}
-
-	return results.Results, nil
+	url := fmt.Sprintf("%s/discover/movie?vote_average.gte=%v&sort_by=vote_average.desc&page=%v&api_key=%v", cfg.BaseUrl, minRating, page, cfg.ApiKey)
+	return GetMovies(cfg, url)
 }
