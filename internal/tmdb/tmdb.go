@@ -3,6 +3,7 @@ package tmdb
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/koleaby4/next_movie_go/internal/models"
 	"io"
 	"log"
 	"net/http"
@@ -11,21 +12,10 @@ import (
 	"time"
 )
 
-type Movie struct {
-	Id          int     `json:"id"`
-	Title       string  `json:"title"`
-	ReleaseDate string  `json:"release_date"`
-	Overview    string  `json:"overview"`
-	Rating      float64 `json:"vote_average"`
-	PosterURL   string  `json:"poster_path"`
-	TrailerURL  string  `json:"trailer_path"`
-	RawData     string  `json:"-"`
-}
-
 type MovieSearchResults struct {
-	Results    []Movie `json:"results"`
-	Page       int     `json:"page"`
-	TotalPages int     `json:"total_pages"`
+	Results    []models.Movie `json:"results"`
+	Page       int            `json:"page"`
+	TotalPages int            `json:"total_pages"`
 }
 
 type VideoResult struct {
@@ -40,9 +30,23 @@ type Config struct {
 	ApiKey  string
 }
 
-func GetMovies(cfg Config, prefixUrl string, top int) ([]Movie, error) {
+func GetMovie(config Config, movieID string) (models.Movie, error) {
+	url := fmt.Sprintf("%s/movie/%s", config.BaseUrl, movieID)
+	movies, err := GetMovies(config, url, 1)
+	if err != nil {
+		return models.Movie{}, err
+	}
+
+	if len(movies) == 0 {
+		return models.Movie{}, fmt.Errorf("movie with id %s not found", movieID)
+	}
+
+	return movies[0], nil
+}
+
+func GetMovies(cfg Config, prefixUrl string, top int) ([]models.Movie, error) {
 	page := 1
-	var movies []Movie
+	var movies []models.Movie
 	var url string
 
 	for {
@@ -73,6 +77,12 @@ func GetMovies(cfg Config, prefixUrl string, top int) ([]Movie, error) {
 			return movies, err
 		}
 
+		if pageResults.TotalPages == 0 {
+			var movieResult models.Movie
+			err = json.Unmarshal(body, &movieResult)
+			return []models.Movie{movieResult}, err
+		}
+
 		for i := range pageResults.Results {
 			rawData, err := json.Marshal(pageResults.Results[i])
 			if err != nil {
@@ -94,7 +104,7 @@ func GetMovies(cfg Config, prefixUrl string, top int) ([]Movie, error) {
 	return EnrichMoviesInfo(cfg, movies), nil
 }
 
-func GetMoviesReleasedBetween(cfg Config, from time.Time, to time.Time, minRating float64) ([]Movie, error) {
+func GetMoviesReleasedBetween(cfg Config, from time.Time, to time.Time, minRating float64) ([]models.Movie, error) {
 	urlPattern := "%s/discover/movie?primary_release_date.gte=%v&primary_release_date.lte=%v&vote_average.gte=%v&sort_by=release_date.desc"
 	url := fmt.Sprintf(urlPattern, cfg.BaseUrl, from.Format("2006-01-02"), to.Format("2006-01-02"), minRating)
 
@@ -105,7 +115,7 @@ func GetMoviesReleasedBetween(cfg Config, from time.Time, to time.Time, minRatin
 	return movies, nil
 }
 
-func EnrichMoviesInfo(cfg Config, movies []Movie) []Movie {
+func EnrichMoviesInfo(cfg Config, movies []models.Movie) []models.Movie {
 	wg := sync.WaitGroup{}
 	wg.Add(len(movies))
 
@@ -119,13 +129,13 @@ func EnrichMoviesInfo(cfg Config, movies []Movie) []Movie {
 	return movies
 }
 
-func expandPosterUrl(movie *Movie) {
-	if movie.PosterURL != "" {
-		movie.PosterURL = "https://image.tmdb.org/t/p/original" + "/" + strings.Trim(movie.PosterURL, "/")
+func expandPosterUrl(movie *models.Movie) {
+	if movie.PosterUrl != "" {
+		movie.PosterUrl = "https://image.tmdb.org/t/p/original" + "/" + strings.Trim(movie.PosterUrl, "/")
 	}
 }
 
-func addTrailerUrl(cfg Config, movie *Movie, wg *sync.WaitGroup) {
+func addTrailerUrl(cfg Config, movie *models.Movie, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	videosUrl := fmt.Sprintf("%s/movie/%d/videos?api_key=%s", cfg.BaseUrl, movie.Id, cfg.ApiKey)
@@ -151,13 +161,13 @@ func addTrailerUrl(cfg Config, movie *Movie, wg *sync.WaitGroup) {
 
 	for _, video := range videoResult.Results {
 		if video.Type == "Trailer" {
-			movie.TrailerURL = fmt.Sprintf("https://www.youtube.com/watch?v=%s", video.Key)
+			movie.TrailerUrl = fmt.Sprintf("https://www.youtube.com/watch?v=%s", video.Key)
 			break
 		}
 	}
 }
 
-func GetMostPopularMovies(cfg Config, minRating float64) ([]Movie, error) {
+func GetMostPopularMovies(cfg Config, minRating float64) ([]models.Movie, error) {
 	url := fmt.Sprintf("%s/discover/movie?vote_average.gte=%v", cfg.BaseUrl, minRating)
 	return GetMovies(cfg, url, 20)
 }

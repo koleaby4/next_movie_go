@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/koleaby4/next_movie_go/config"
 	"github.com/koleaby4/next_movie_go/internal/db"
+	"github.com/koleaby4/next_movie_go/internal/models"
 	"github.com/koleaby4/next_movie_go/internal/tmdb"
 	"log"
-	"strconv"
 	"time"
 )
 
@@ -37,7 +37,7 @@ func playWithMoviesTable() {
 	defer conn.Close(ctx)
 
 	queries := db.New(conn)
-	matrixResult, err := queries.InsertMovie(ctx, db.InsertMovieParams{ID: "abc", Title: "Matrix"})
+	matrixResult, err := queries.InsertMovie(ctx, models.Movie{Id: "abc", Title: "Matrix"})
 	if err != nil {
 		return
 	}
@@ -80,20 +80,10 @@ func LoadGoodMovies(queries *db.Queries, cfg tmdb.Config, ctx context.Context) {
 		to = from.AddDate(0, 1, 0)
 
 		for _, movie := range enrichedMovies {
-			data := db.InsertMovieParams{
-				ID:          strconv.Itoa(movie.Id),
-				Title:       movie.Title,
-				ReleaseDate: movie.ReleaseDate,
-				Overview:    movie.Overview,
-				Rating:      movie.Rating,
-				PosterUrl:   movie.PosterURL,
-				TrailerUrl:  movie.TrailerURL,
-				RawData:     movie.RawData,
-			}
 
-			_, err := queries.InsertMovie(ctx, data)
+			_, err := queries.InsertMovie(ctx, movie)
 			if err != nil {
-				log.Printf("error persisting movie=%v. err=%v\n", data, err)
+				log.Printf("error persisting movie=%v. err=%v\n", movie, err)
 			}
 			counter++
 		}
@@ -129,6 +119,6 @@ func playWithMostPopularMovies(cfg tmdb.Config, minRating float64) {
 
 	fmt.Println("number of most popular movies fetched:", len(mostPopularMovies))
 	for _, movie := range mostPopularMovies {
-		fmt.Println(movie.Title, movie.Rating, movie.PosterURL, movie.TrailerURL)
+		fmt.Println(movie.Title, movie.Rating, movie.PosterUrl, movie.TrailerUrl)
 	}
 }

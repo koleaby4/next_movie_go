@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"github.com/jackc/pgx/v5"
 	"github.com/koleaby4/next_movie_go/config"
 	"github.com/koleaby4/next_movie_go/internal/db"
 	"github.com/koleaby4/next_movie_go/internal/tmdb"
@@ -21,8 +23,23 @@ func movieDetail(w http.ResponseWriter, r *http.Request) {
 
 	movie, err := queries.GetMovie(ctx, movieID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		if errors.Is(err, pgx.ErrNoRows) {
+			movie, err = tmdb.GetMovie(tmdbConfig, movieID)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			_, err = queries.InsertMovie(ctx, movie)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	tmpl, err := template.ParseFiles("internal/web/templates/movie_detail.html", "internal/web/templates/_watched_info_form.html")

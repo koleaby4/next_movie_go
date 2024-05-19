@@ -10,7 +10,7 @@ create unique index users_unique_email on users (email);
 -- movies
 create table if not exists movies
 (
-    id           varchar(128) primary key,
+    id           int primary key,
     title        varchar(256) not null,
     release_date varchar(128) not null,
     overview     text         not null,
