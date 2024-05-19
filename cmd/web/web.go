@@ -8,13 +8,19 @@ import (
 	"github.com/koleaby4/next_movie_go/internal/db"
 	"github.com/koleaby4/next_movie_go/internal/tmdb"
 	"html/template"
+	"log"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
 func movieDetail(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
-	movieID := parts[len(parts)-1]
+	movieIdStr := parts[len(parts)-1]
+	movieID, err := strconv.Atoi(movieIdStr)
+	if err != nil {
+		log.Printf("error parsing movie id=%v; err=%v\n", movieIdStr, err)
+	}
 
 	ctx := context.Background()
 	conn := db.NewConnection("", ctx)

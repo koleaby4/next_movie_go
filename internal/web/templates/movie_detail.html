@@ -7,14 +7,14 @@
 <h1>{{.Title}}</h1>
 <p>Release Date: {{.ReleaseDate}}</p>
 <p>Rating: {{.Rating}}</p>
-<img src="{{.PosterURL}}" alt="{{.Title}} Poster">
+<img src="{{.PosterUrl}}" alt="{{.Title}} Poster">
 
 {{if .Overview}}
 <p>{{.Overview}}</p>
 {{end}}
 
 {{if .TrailerURL}}
-<a href="{{.TrailerURL}}">Watch Trailer</a>
+<a href="{{.TrailerUrl}}">Watch Trailer</a>
 {{end}}
 
 {{template "_watched_info_form.html" .}}

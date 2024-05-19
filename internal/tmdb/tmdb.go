@@ -30,8 +30,8 @@ type Config struct {
 	ApiKey  string
 }
 
-func GetMovie(config Config, movieID string) (models.Movie, error) {
-	url := fmt.Sprintf("%s/movie/%s", config.BaseUrl, movieID)
+func GetMovie(config Config, movieID int) (models.Movie, error) {
+	url := fmt.Sprintf("%s/movie/%v", config.BaseUrl, movieID)
 	movies, err := GetMovies(config, url, 1)
 	if err != nil {
 		return models.Movie{}, err
@@ -80,7 +80,11 @@ func GetMovies(cfg Config, prefixUrl string, top int) ([]models.Movie, error) {
 		if pageResults.TotalPages == 0 {
 			var movieResult models.Movie
 			err = json.Unmarshal(body, &movieResult)
-			return []models.Movie{movieResult}, err
+			if err != nil {
+				log.Println("error unmarshalling movieResult", err)
+				return []models.Movie{}, err
+			}
+			return EnrichMoviesInfo(cfg, []models.Movie{movieResult}), nil
 		}
 
 		for i := range pageResults.Results {
