@@ -25,7 +25,7 @@ func movieDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl, err := template.ParseFiles("internal/web/templates/movie_detail.html")
+	tmpl, err := template.ParseFiles("internal/web/templates/movie_detail.html", "internal/web/templates/_watched_info_form.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
