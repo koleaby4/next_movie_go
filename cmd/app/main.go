@@ -121,7 +121,7 @@ func main() {
 }
 
 func playWithMostPopularMovies(cfg tmdb.Config, minRating float64) {
-	mostPopularMovies, err := tmdb.GetMostPopularMovies(cfg, minRating, 1)
+	mostPopularMovies, err := tmdb.GetMostPopularMovies(cfg, minRating)
 
 	if err != nil {
 		log.Fatalln("error getting most popular movies", err)

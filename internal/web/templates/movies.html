@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movies</title>
+</head>
+<body>
+    <p>reloaded...</p>
+    {{range .}}
+    <div><a href="/movies/{{.Id}}">{{.Title}}</a> {{.ReleaseDate}}, {{.Rating}}</div>
+    {{end}}
+</body>
+</html>

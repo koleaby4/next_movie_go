@@ -40,7 +40,7 @@ type Config struct {
 	ApiKey  string
 }
 
-func GetMovies(cfg Config, prefixUrl string) ([]Movie, error) {
+func GetMovies(cfg Config, prefixUrl string, top int) ([]Movie, error) {
 	page := 1
 	var movies []Movie
 	var url string
@@ -82,6 +82,9 @@ func GetMovies(cfg Config, prefixUrl string) ([]Movie, error) {
 		}
 
 		movies = append(movies, pageResults.Results...)
+		if top > 0 && len(movies) >= top {
+			break
+		}
 		if pageResults.Page >= pageResults.TotalPages {
 			break
 		}
@@ -95,7 +98,7 @@ func GetMoviesReleasedBetween(cfg Config, from time.Time, to time.Time, minRatin
 	urlPattern := "%s/discover/movie?primary_release_date.gte=%v&primary_release_date.lte=%v&vote_average.gte=%v&sort_by=release_date.desc"
 	url := fmt.Sprintf(urlPattern, cfg.BaseUrl, from.Format("2006-01-02"), to.Format("2006-01-02"), minRating)
 
-	movies, err := GetMovies(cfg, url)
+	movies, err := GetMovies(cfg, url, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +157,7 @@ func addTrailerUrl(cfg Config, movie *Movie, wg *sync.WaitGroup) {
 	}
 }
 
-func GetMostPopularMovies(cfg Config, minRating float64, page int) ([]Movie, error) {
-	url := fmt.Sprintf("%s/discover/movie?vote_average.gte=%v&sort_by=vote_average.desc&page=%v&api_key=%v", cfg.BaseUrl, minRating, page, cfg.ApiKey)
-	return GetMovies(cfg, url)
+func GetMostPopularMovies(cfg Config, minRating float64) ([]Movie, error) {
+	url := fmt.Sprintf("%s/discover/movie?vote_average.gte=%v", cfg.BaseUrl, minRating)
+	return GetMovies(cfg, url, 20)
 }
