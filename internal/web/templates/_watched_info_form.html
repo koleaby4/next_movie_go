@@ -1,0 +1,13 @@
+<form action="/movies/{{.Id}}/watched_info" method="post">
+  <input type="hidden" name="user_id" value="42">
+  <p>Your opinion about this movie:</p>
+  <input type="radio" id="not-watched" name="opinion" value="not-watched">
+  <label for="not-watched">Not Watched</label><br>
+  <input type="radio" id="liked" name="opinion" value="liked">
+  <label for="liked">Liked</label><br>
+  <input type="radio" id="neutral" name="opinion" value="neutral">
+  <label for="neutral">Neutral</label><br>
+  <input type="radio" id="disliked" name="opinion" value="disliked">
+  <label for="disliked">Disliked</label><br>
+  <input type="submit" value="Submit">
+</form>
