@@ -37,11 +37,22 @@ from movies
 where id = $1
 `
 
-func (q *Queries) GetMovie(ctx context.Context, id string) (models.Movie, error) {
+type GetMovieRow struct {
+	ID          int32
+	Title       string
+	ReleaseDate string
+	Overview    string
+	Rating      float64
+	PosterUrl   string
+	TrailerUrl  string
+	RawData     string
+}
+
+func (q *Queries) GetMovie(ctx context.Context, id int32) (GetMovieRow, error) {
 	row := q.db.QueryRow(ctx, getMovie, id)
-	var i models.Movie
+	var i GetMovieRow
 	err := row.Scan(
-		&i.Id,
+		&i.ID,
 		&i.Title,
 		&i.ReleaseDate,
 		&i.Overview,
@@ -59,9 +70,20 @@ values ($1, $2, $3, $4, $5, $6, $7, $8)
 on conflict (id) do nothing
 `
 
+type InsertMovieParams struct {
+	ID          int32
+	Title       string
+	ReleaseDate string
+	Overview    string
+	Rating      float64
+	PosterUrl   string
+	TrailerUrl  string
+	RawData     string
+}
+
 func (q *Queries) InsertMovie(ctx context.Context, arg models.Movie) (pgconn.CommandTag, error) {
 	return q.db.Exec(ctx, insertMovie,
-		arg.Id,
+		arg.ID,
 		arg.Title,
 		arg.ReleaseDate,
 		arg.Overview,
@@ -85,17 +107,28 @@ from movies
 order by release_date desc
 `
 
-func (q *Queries) ListMovies(ctx context.Context) ([]models.Movie, error) {
+type ListMoviesRow struct {
+	ID          int32
+	Title       string
+	ReleaseDate string
+	Overview    string
+	Rating      float64
+	PosterUrl   string
+	TrailerUrl  string
+	RawData     string
+}
+
+func (q *Queries) ListMovies(ctx context.Context) ([]ListMoviesRow, error) {
 	rows, err := q.db.Query(ctx, listMovies)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []models.Movie
+	var items []ListMoviesRow
 	for rows.Next() {
-		var i models.Movie
+		var i ListMoviesRow
 		if err := rows.Scan(
-			&i.Id,
+			&i.ID,
 			&i.Title,
 			&i.ReleaseDate,
 			&i.Overview,

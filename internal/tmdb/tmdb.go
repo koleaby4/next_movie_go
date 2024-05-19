@@ -138,7 +138,7 @@ func expandPosterUrl(movie *models.Movie) {
 func addTrailerUrl(cfg Config, movie *models.Movie, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	videosUrl := fmt.Sprintf("%s/movie/%d/videos?api_key=%s", cfg.BaseUrl, movie.Id, cfg.ApiKey)
+	videosUrl := fmt.Sprintf("%s/movie/%d/videos?api_key=%s", cfg.BaseUrl, movie.ID, cfg.ApiKey)
 	videoResp, err := http.Get(videosUrl)
 	if err != nil {
 		log.Println("error fetching video url=", videosUrl, err)

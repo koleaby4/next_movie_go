@@ -9,7 +9,7 @@ import (
 )
 
 type Movie struct {
-	ID          string
+	ID          int32
 	Title       string
 	ReleaseDate string
 	Overview    string

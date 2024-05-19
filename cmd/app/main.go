@@ -37,7 +37,7 @@ func playWithMoviesTable() {
 	defer conn.Close(ctx)
 
 	queries := db.New(conn)
-	matrixResult, err := queries.InsertMovie(ctx, models.Movie{Id: "abc", Title: "Matrix"})
+	matrixResult, err := queries.InsertMovie(ctx, models.Movie{ID: 123, Title: "Matrix"})
 	if err != nil {
 		return
 	}
