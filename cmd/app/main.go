@@ -11,11 +11,11 @@ import (
 	"time"
 )
 
-func playWithUsersTable() {
+func playWithUsersTable(dsn string) {
 	fmt.Println("starting playWithUsersTable...")
 
 	ctx := context.Background()
-	conn := db.NewConnection("", ctx)
+	conn := db.NewConnection(dsn, ctx)
 	defer conn.Close(ctx)
 
 	queries := db.New(conn)
@@ -30,10 +30,10 @@ func playWithUsersTable() {
 
 }
 
-func playWithMoviesTable() {
+func playWithMoviesTable(dsn string) {
 	fmt.Println("starting playWithMoviesTable...")
 	ctx := context.Background()
-	conn := db.NewConnection("", ctx)
+	conn := db.NewConnection(dsn, ctx)
 	defer conn.Close(ctx)
 
 	queries := db.New(conn)
@@ -46,7 +46,7 @@ func playWithMoviesTable() {
 	fmt.Println("finished playWithMoviesTable")
 }
 
-func LoadGoodMovies(queries *db.Queries, cfg tmdb.Config, ctx context.Context) {
+func LoadGoodMovies(queries *db.Queries, cfg config.TmdbConfig, ctx context.Context) {
 	var from time.Time
 	latestLoadedReleaseDate, err := queries.GetLastKnownReleaseDate(context.Background())
 	if err != nil || latestLoadedReleaseDate == nil {
@@ -92,25 +92,23 @@ func LoadGoodMovies(queries *db.Queries, cfg tmdb.Config, ctx context.Context) {
 }
 
 func main() {
-	tmdbConfig := tmdb.Config{
-		BaseUrl: "https://api.themoviedb.org/3",
-		ApiKey:  config.GetTmdbApiKey(),
-	}
 
-	appConfig := config.AppConfig{
-		Tmdb: tmdbConfig,
+	appConfig, err := config.ReadFromFile()
+
+	if err != nil {
+		log.Fatalln("error reading config file", err)
 	}
 
 	ctx := context.Background()
-	conn := db.NewConnection("", ctx)
+	conn := db.NewConnection(appConfig.DbDsn, ctx)
 	defer conn.Close(ctx)
 
 	queries := db.New(conn)
 
-	LoadGoodMovies(queries, appConfig.Tmdb, ctx)
+	LoadGoodMovies(queries, appConfig.TmdbConfig, ctx)
 }
 
-func playWithMostPopularMovies(cfg tmdb.Config, minRating float64) {
+func playWithMostPopularMovies(cfg config.TmdbConfig, minRating float64) {
 	mostPopularMovies, err := tmdb.GetMostPopularMovies(cfg, minRating)
 
 	if err != nil {

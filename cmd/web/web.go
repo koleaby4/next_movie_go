@@ -30,7 +30,7 @@ func movieDetail(w http.ResponseWriter, r *http.Request) {
 	movie, err := queries.GetMovie(ctx, movieID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			movie, err = tmdb.GetMovie(tmdbConfig, movieID)
+			movie, err = tmdb.GetMovie(appConfig.TmdbConfig, movieID)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -62,7 +62,7 @@ func movieDetail(w http.ResponseWriter, r *http.Request) {
 }
 
 func mostPopularMovies(w http.ResponseWriter, r *http.Request) {
-	movies, err := tmdb.GetMostPopularMovies(tmdbConfig, 8)
+	movies, err := tmdb.GetMostPopularMovies(appConfig.TmdbConfig, 8)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -81,12 +81,13 @@ func mostPopularMovies(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var tmdbConfig = tmdb.Config{
-	BaseUrl: "https://api.themoviedb.org/3",
-	ApiKey:  config.GetTmdbApiKey(),
-}
+var appConfig config.AppConfig
+var err error
 
 func main() {
+
+	appConfig, err = config.ReadFromFile()
+
 	http.HandleFunc("/movies/most-popular", mostPopularMovies)
 	http.HandleFunc("/movies/{movie_id}", movieDetail)
 	http.ListenAndServe(":8080", nil)

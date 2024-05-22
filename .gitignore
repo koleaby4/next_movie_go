@@ -7,4 +7,4 @@
 /dataSources/
 /dataSources.local.xml
 .idea
-/config/.env
+/config/.env.json

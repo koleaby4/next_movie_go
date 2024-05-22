@@ -3,6 +3,7 @@ package tmdb
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/koleaby4/next_movie_go/config"
 	"github.com/koleaby4/next_movie_go/internal/models"
 	"io"
 	"log"
@@ -25,13 +26,8 @@ type VideoResult struct {
 	} `json:"results"`
 }
 
-type Config struct {
-	BaseUrl string
-	ApiKey  string
-}
-
-func GetMovie(config Config, movieID int) (models.Movie, error) {
-	url := fmt.Sprintf("%s/movie/%v", config.BaseUrl, movieID)
+func GetMovie(config config.TmdbConfig, movieID int) (models.Movie, error) {
+	url := fmt.Sprintf("%s/movie/%v", config.TmdbBaseUrl, movieID)
 	movies, err := GetMovies(config, url, 1)
 	if err != nil {
 		return models.Movie{}, err
@@ -44,13 +40,13 @@ func GetMovie(config Config, movieID int) (models.Movie, error) {
 	return movies[0], nil
 }
 
-func GetMovies(cfg Config, prefixUrl string, top int) ([]models.Movie, error) {
+func GetMovies(cfg config.TmdbConfig, prefixUrl string, top int) ([]models.Movie, error) {
 	page := 1
 	var movies []models.Movie
 	var url string
 
 	for {
-		tail := fmt.Sprintf("page=%d&api_key=%s", page, cfg.ApiKey)
+		tail := fmt.Sprintf("page=%d&api_key=%s", page, cfg.TmdbApiKey)
 
 		if strings.Contains(prefixUrl, "?") {
 			url = prefixUrl + "&" + tail
@@ -108,9 +104,9 @@ func GetMovies(cfg Config, prefixUrl string, top int) ([]models.Movie, error) {
 	return EnrichMoviesInfo(cfg, movies), nil
 }
 
-func GetMoviesReleasedBetween(cfg Config, from time.Time, to time.Time, minRating float64) ([]models.Movie, error) {
+func GetMoviesReleasedBetween(cfg config.TmdbConfig, from time.Time, to time.Time, minRating float64) ([]models.Movie, error) {
 	urlPattern := "%s/discover/movie?primary_release_date.gte=%v&primary_release_date.lte=%v&vote_average.gte=%v&sort_by=release_date.desc"
-	url := fmt.Sprintf(urlPattern, cfg.BaseUrl, from.Format("2006-01-02"), to.Format("2006-01-02"), minRating)
+	url := fmt.Sprintf(urlPattern, cfg.TmdbBaseUrl, from.Format("2006-01-02"), to.Format("2006-01-02"), minRating)
 
 	movies, err := GetMovies(cfg, url, 0)
 	if err != nil {
@@ -119,7 +115,7 @@ func GetMoviesReleasedBetween(cfg Config, from time.Time, to time.Time, minRatin
 	return movies, nil
 }
 
-func EnrichMoviesInfo(cfg Config, movies []models.Movie) []models.Movie {
+func EnrichMoviesInfo(cfg config.TmdbConfig, movies []models.Movie) []models.Movie {
 	wg := sync.WaitGroup{}
 	wg.Add(len(movies))
 
@@ -139,10 +135,10 @@ func expandPosterUrl(movie *models.Movie) {
 	}
 }
 
-func addTrailerUrl(cfg Config, movie *models.Movie, wg *sync.WaitGroup) {
+func addTrailerUrl(cfg config.TmdbConfig, movie *models.Movie, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	videosUrl := fmt.Sprintf("%s/movie/%d/videos?api_key=%s", cfg.BaseUrl, movie.ID, cfg.ApiKey)
+	videosUrl := fmt.Sprintf("%s/movie/%d/videos?api_key=%s", cfg.TmdbBaseUrl, movie.ID, cfg.TmdbApiKey)
 	videoResp, err := http.Get(videosUrl)
 	if err != nil {
 		log.Println("error fetching video url=", videosUrl, err)
@@ -171,7 +167,7 @@ func addTrailerUrl(cfg Config, movie *models.Movie, wg *sync.WaitGroup) {
 	}
 }
 
-func GetMostPopularMovies(cfg Config, minRating float64) ([]models.Movie, error) {
-	url := fmt.Sprintf("%s/discover/movie?vote_average.gte=%v", cfg.BaseUrl, minRating)
+func GetMostPopularMovies(cfg config.TmdbConfig, minRating float64) ([]models.Movie, error) {
+	url := fmt.Sprintf("%s/discover/movie?vote_average.gte=%v", cfg.TmdbBaseUrl, minRating)
 	return GetMovies(cfg, url, 20)
 }
