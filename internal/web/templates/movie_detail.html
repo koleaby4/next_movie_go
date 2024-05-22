@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
+{{template "_navbar.html"}}
 <div class="container mt-5">
     <h1 class="mb-4">{{.Title}}</h1>
     <div class="card">
@@ -20,7 +21,7 @@
                     {{if .Overview}}
                     <p class="card-text mt-3">{{.Overview}}</p>
                     {{end}}
-                    {{if .TrailerURL}}
+                    {{if .TrailerUrl}}
                     <a class="btn btn-primary mt-3" href="{{.TrailerUrl}}">Watch Trailer</a>
                     {{end}}
                 </div>

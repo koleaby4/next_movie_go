@@ -11,13 +11,16 @@
     </style>
 </head>
 <body>
+{{template "_navbar.html"}}
 <div class="container mt-5">
     <h1 class="mb-4">Movies</h1>
     <div class="row">
         {{range .}}
         <div class="col-md-4 mb-4">
             <div class="card">
-                <img class="img-fluid movie-poster" src="{{.PosterUrl}}" alt="{{.Title}} Poster">
+                <a href="/movies/{{.ID}}">
+                    <img class="img-fluid movie-poster" src="{{.PosterUrl}}" alt="{{.Title}} Poster">
+                </a>
                 <div class="card-body">
                     <h5 class="card-title"><a href="/movies/{{.ID}}">{{.Title}}</a></h5>
                     <p class="card-text">Release Date: {{.ReleaseDate}}</p>
