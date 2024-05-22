@@ -2,21 +2,32 @@
 <html>
 <head>
     <title>{{.Title}}</title>
+    <!-- Add Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-<h1>{{.Title}}</h1>
-<p>Release Date: {{.ReleaseDate}}</p>
-<p>Rating: {{.Rating}}</p>
-<img src="{{.PosterUrl}}" alt="{{.Title}} Poster">
-
-{{if .Overview}}
-<p>{{.Overview}}</p>
-{{end}}
-
-{{if .TrailerURL}}
-<a href="{{.TrailerUrl}}">Watch Trailer</a>
-{{end}}
-
-{{template "_watched_info_form.html" .}}
+<div class="container mt-5">
+    <h1 class="mb-4">{{.Title}}</h1>
+    <div class="card">
+        <div class="row no-gutters">
+            <div class="col-md-4">
+                <img class="img-fluid" src="{{.PosterUrl}}" alt="{{.Title}} Poster">
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <p class="card-text">Release Date: {{.ReleaseDate}}</p>
+                    <p class="card-text">Rating: {{.Rating}}</p>
+                    {{if .Overview}}
+                    <p class="card-text mt-3">{{.Overview}}</p>
+                    {{end}}
+                    {{if .TrailerURL}}
+                    <a class="btn btn-primary mt-3" href="{{.TrailerUrl}}">Watch Trailer</a>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+    {{template "_watched_info_form.html" .}}
+</div>
 </body>
 </html>

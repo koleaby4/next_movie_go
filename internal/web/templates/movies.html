@@ -2,11 +2,31 @@
 <html>
 <head>
     <title>Movies</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .movie-poster {
+            width: 100%;
+            object-fit: contain;
+        }
+    </style>
 </head>
 <body>
-    <p>reloaded...</p>
-    {{range .}}
-    <div><a href="/movies/{{.ID}}">{{.Title}}</a> {{.ReleaseDate}}, {{.Rating}}</div>
-    {{end}}
+<div class="container mt-5">
+    <h1 class="mb-4">Movies</h1>
+    <div class="row">
+        {{range .}}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img class="img-fluid movie-poster" src="{{.PosterUrl}}" alt="{{.Title}} Poster">
+                <div class="card-body">
+                    <h5 class="card-title"><a href="/movies/{{.ID}}">{{.Title}}</a></h5>
+                    <p class="card-text">Release Date: {{.ReleaseDate}}</p>
+                    <p class="card-text">Rating: {{.Rating}}</p>
+                </div>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
 </body>
 </html>
