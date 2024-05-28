@@ -22,7 +22,7 @@ type Movie struct {
 
 type MoviesWatchedByUser struct {
 	UserID          int32
-	MovieID         string
+	MovieID         int32
 	ExperienceStars int32
 }
 

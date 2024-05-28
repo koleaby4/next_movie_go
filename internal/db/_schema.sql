@@ -26,9 +26,9 @@ create index movies_title on movies (title);
 -- user watched movies
 create table if not exists movies_watched_by_user
 (
-    user_id          int          not null,
-    movie_id         varchar(128) not null,
-    experience_stars int          not null,
+    user_id          int not null,
+    movie_id         int not null,
+    experience_stars int not null,
     primary key (user_id, movie_id),
     CONSTRAINT fk_movies_watched_by_user_user_id FOREIGN KEY (user_id) REFERENCES users (id),
     CONSTRAINT fk_movies_watched_by_user_movie_id FOREIGN KEY (movie_id) REFERENCES movies (id),

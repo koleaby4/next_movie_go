@@ -17,9 +17,9 @@ values ($1, $2, $3)
 `
 
 type AddMovieWatchedByUserParams struct {
-	UserID          int32
-	MovieID         string
-	ExperienceStars int32
+	UserID          int
+	MovieID         int
+	ExperienceStars int
 }
 
 func (q *Queries) AddMovieWatchedByUser(ctx context.Context, arg AddMovieWatchedByUserParams) (pgconn.CommandTag, error) {
@@ -32,7 +32,7 @@ from movies_watched_by_user
 where user_id = $1
 `
 
-func (q *Queries) GetMoviesWatchedByUser(ctx context.Context, userID int32) ([]MoviesWatchedByUser, error) {
+func (q *Queries) GetMoviesWatchedByUser(ctx context.Context, userID int) ([]MoviesWatchedByUser, error) {
 	rows, err := q.db.Query(ctx, getMoviesWatchedByUser, userID)
 	if err != nil {
 		return nil, err
@@ -60,8 +60,8 @@ where user_id = $1
 `
 
 type RemoveMovieWatchedByUserParams struct {
-	UserID  int32
-	MovieID string
+	UserID  int
+	MovieID int
 }
 
 func (q *Queries) RemoveMovieWatchedByUser(ctx context.Context, arg RemoveMovieWatchedByUserParams) error {
@@ -77,8 +77,8 @@ where user_id = $1
 `
 
 type UpdateMovieWatchedByUserParams struct {
-	ExperienceStars int32
-	MovieID         string
+	ExperienceStars int
+	MovieID         int
 }
 
 func (q *Queries) UpdateMovieWatchedByUser(ctx context.Context, arg UpdateMovieWatchedByUserParams) error {

@@ -12,24 +12,18 @@ import (
 )
 
 const createUser = `-- name: CreateUser :execresult
-insert into users (email) values($1)
+insert into users (email)
+values ($1) on conflict (email) do nothing
 `
 
 func (q *Queries) CreateUser(ctx context.Context, email string) (pgconn.CommandTag, error) {
 	return q.db.Exec(ctx, createUser, email)
 }
 
-const deleteUser = `-- name: DeleteUser :exec
-delete from users where email = $1
-`
-
-func (q *Queries) DeleteUser(ctx context.Context, email string) error {
-	_, err := q.db.Exec(ctx, deleteUser, email)
-	return err
-}
-
 const getUser = `-- name: GetUser :one
-select id, email from users where email = $1
+select id, email
+from users
+where email = $1
 `
 
 func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
@@ -37,65 +31,4 @@ func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 	var i User
 	err := row.Scan(&i.ID, &i.Email)
 	return i, err
-}
-
-const listUsers = `-- name: ListUsers :many
-select id, email
-from users
-order by email
-`
-
-func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
-	rows, err := q.db.Query(ctx, listUsers)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []User
-	for rows.Next() {
-		var i User
-		if err := rows.Scan(&i.ID, &i.Email); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const searchUsers = `-- name: SearchUsers :many
-select id, email from users
-where email like $1
-`
-
-func (q *Queries) SearchUsers(ctx context.Context, email string) ([]User, error) {
-	rows, err := q.db.Query(ctx, searchUsers, email)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []User
-	for rows.Next() {
-		var i User
-		if err := rows.Scan(&i.ID, &i.Email); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const updateUser = `-- name: UpdateUser :exec
-update users
-set email = $1 where email = $1
-`
-
-func (q *Queries) UpdateUser(ctx context.Context, email string) error {
-	_, err := q.db.Exec(ctx, updateUser, email)
-	return err
 }
