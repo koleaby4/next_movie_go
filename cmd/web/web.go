@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	appConfig, err := config.ReadFromFile()
+	appConfig, err := config.ReadFromFile("config/.env.json")
 	if err != nil {
 		log.Fatalln("error reading config file", err)
 	}

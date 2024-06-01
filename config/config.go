@@ -12,13 +12,14 @@ type AppConfig struct {
 }
 
 type TmdbConfig struct {
-	TmdbApiKey  string `json:"API_KEY"`
-	TmdbBaseUrl string `json:"BASE_URL"`
+	ApiKey                    string `json:"API_KEY"`
+	BaseUrl                   string `json:"BASE_URL"`
+	BackloadHighWatermarkDate string `json:"BACKLOAD_HIGH_WATERMARK_DATE"`
 }
 
-func ReadFromFile() (AppConfig, error) {
+func ReadFromFile(filePath string) (AppConfig, error) {
 	appConfig := AppConfig{}
-	contents, err := os.ReadFile("config/.env.json")
+	contents, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Println("error reading config file")
 		return AppConfig{}, err

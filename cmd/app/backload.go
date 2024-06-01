@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/koleaby4/next_movie_go/config"
 	"github.com/koleaby4/next_movie_go/internal/db"
 	"github.com/koleaby4/next_movie_go/internal/models"
 	"github.com/koleaby4/next_movie_go/internal/tmdb"
 	"log"
+	"os"
 	"time"
 )
 
@@ -46,21 +48,10 @@ func playWithMoviesTable(dsn string) {
 	fmt.Println("finished playWithMoviesTable")
 }
 
-func LoadGoodMovies(queries *db.Queries, cfg config.TmdbConfig, ctx context.Context) {
-	var from time.Time
-	latestLoadedReleaseDate, err := queries.GetLastKnownReleaseDate(context.Background())
-	if err != nil || latestLoadedReleaseDate == nil {
-		log.Println("error getting latest inserted date", err)
-		from = time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)
-	} else {
-		releaseDate, ok := latestLoadedReleaseDate.(string)
-		if !ok {
-			log.Println("error casting latest inserted date to string", latestLoadedReleaseDate)
-		}
-		from, err = time.Parse("2006-01-02", releaseDate)
-		if err != nil {
-			fmt.Println("error parsing date=", err)
-		}
+func LoadGoodMovies(queries *db.Queries, cfg config.TmdbConfig, ctx context.Context) (time.Time, error) {
+	from, err := time.Parse("2006-01-02", cfg.BackloadHighWatermarkDate)
+	if err != nil {
+		return time.Time{}, err
 	}
 
 	log.Println("latestLoadedReleaseDate", from)
@@ -89,11 +80,13 @@ func LoadGoodMovies(queries *db.Queries, cfg config.TmdbConfig, ctx context.Cont
 		}
 
 	}
+
+	return to, nil
 }
 
 func main() {
-
-	appConfig, err := config.ReadFromFile()
+	configPath := "config/.env.json"
+	appConfig, err := config.ReadFromFile(configPath)
 
 	if err != nil {
 		log.Fatalln("error reading config file", err)
@@ -105,7 +98,39 @@ func main() {
 
 	queries := db.New(conn)
 
-	LoadGoodMovies(queries, appConfig.TmdbConfig, ctx)
+	watermarkDate, err := LoadGoodMovies(queries, appConfig.TmdbConfig, ctx)
+	if err != nil {
+		log.Fatalln("error in LoadGoodMovies", err)
+	}
+	updateHighWatermark(watermarkDate, configPath)
+
+	fmt.Println("finished backload")
+
+}
+
+func updateHighWatermark(newWatermark time.Time, configPath string) error {
+	appConfig, err := config.ReadFromFile(configPath)
+
+	if err != nil {
+		log.Println("error reading config file", err)
+		return err
+	}
+
+	appConfig.TmdbConfig.BackloadHighWatermarkDate = newWatermark.Format("2006-01-02")
+
+	configContent, err := json.MarshalIndent(appConfig, "", "  ")
+	if err != nil {
+		log.Println("error marshalling json", err)
+		return err
+	}
+
+	err = os.WriteFile(configPath, configContent, 0644)
+	if err != nil {
+		log.Println("error writing to config file", err)
+		return err
+	}
+
+	return nil
 }
 
 func playWithMostPopularMovies(cfg config.TmdbConfig, minRating float64) {
