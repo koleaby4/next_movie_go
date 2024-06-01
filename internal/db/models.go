@@ -27,6 +27,8 @@ type MoviesWatchedByUser struct {
 }
 
 type User struct {
-	ID    int32
-	Email string
+	ID        int32
+	Email     string
+	AuthToken string
+	Expiry    pgtype.Timestamp
 }

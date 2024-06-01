@@ -1,18 +1,10 @@
 -- users
 create table if not exists users
 (
-    id    serial primary key,
-    email varchar(128) not null
-);
-
-create unique index users_unique_email on users (email);
-
-create table if not exists authentication
-(
-    user_id int primary key,
-    code    varchar(256) not null,
-    expires TIMESTAMP not null,
-    CONSTRAINT fk_authentication_user_id FOREIGN KEY (user_id) REFERENCES users (id)
+    id         serial primary key,
+    email      varchar(128) unique not null,
+    auth_token varchar(128)        not null,
+    expiry     TIMESTAMP           not null default NOW() + interval '1 day'
 );
 
 -- movies

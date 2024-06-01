@@ -7,21 +7,10 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
-const createUser = `-- name: CreateUser :execresult
-insert into users (email)
-values ($1) on conflict (email) do nothing
-`
-
-func (q *Queries) CreateUser(ctx context.Context, email string) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, createUser, email)
-}
-
 const getUser = `-- name: GetUser :one
-select id, email
+select id, email, auth_token, expiry
 from users
 where email = $1
 `
@@ -29,6 +18,36 @@ where email = $1
 func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 	row := q.db.QueryRow(ctx, getUser, email)
 	var i User
-	err := row.Scan(&i.ID, &i.Email)
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.AuthToken,
+		&i.Expiry,
+	)
+	return i, err
+}
+
+const upsertUser = `-- name: UpsertUser :one
+INSERT INTO users (email, auth_token, expiry)
+VALUES ($1, $2, NOW() + INTERVAL '24 hours') ON CONFLICT (user_id)
+DO
+UPDATE SET code = $2, expires = NOW() + INTERVAL '24 hours'
+    RETURNING id, email, auth_token, expiry
+`
+
+type UpsertUserParams struct {
+	Email     string
+	AuthToken string
+}
+
+func (q *Queries) UpsertUser(ctx context.Context, arg User) (User, error) {
+	row := q.db.QueryRow(ctx, upsertUser, arg.Email, arg.AuthToken)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.AuthToken,
+		&i.Expiry,
+	)
 	return i, err
 }
