@@ -9,7 +9,7 @@ import (
 )
 
 type Movie struct {
-	ID          int32
+	ID          int
 	Title       string
 	ReleaseDate string
 	Overview    string
@@ -21,13 +21,13 @@ type Movie struct {
 }
 
 type MoviesWatchedByUser struct {
-	UserID          int32
-	MovieID         int32
-	ExperienceStars int32
+	UserID          int
+	MovieID         int
+	ExperienceStars int
 }
 
 type User struct {
-	ID        int32
+	ID        int
 	Email     string
 	AuthToken string
 	Expiry    pgtype.Timestamp
