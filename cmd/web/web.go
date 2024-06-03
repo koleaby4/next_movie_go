@@ -18,5 +18,15 @@ func main() {
 	http.HandleFunc("/movies/most-popular", h.MostPopularMovies)
 	http.HandleFunc("/movies/{movie_id}", h.MovieDetail)
 
+	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			h.Login(w, r)
+		} else if r.Method == http.MethodPost {
+			h.LoginPost(w, r)
+		} else {
+			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		}
+	})
+
 	http.ListenAndServe(":8080", nil)
 }
