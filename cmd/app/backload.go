@@ -13,24 +13,24 @@ import (
 	"time"
 )
 
-func playWithUsersTable(dsn string) {
-	fmt.Println("starting playWithUsersTable...")
-
-	ctx := context.Background()
-	conn := db.NewConnection(dsn, ctx)
-	defer conn.Close(ctx)
-
-	queries := db.New(conn)
-
-	alexResult, err := queries.CreateUser(ctx, "alexResult@gmail.com")
-	if err != nil {
-		log.Fatalln("error creating user alexResult:", err)
-	}
-	log.Println("user alexResult:", alexResult)
-
-	fmt.Println("finished playWithUsersTable")
-
-}
+//func playWithUsersTable(dsn string) {
+//	fmt.Println("starting playWithUsersTable...")
+//
+//	ctx := context.Background()
+//	conn := db.NewConnection(dsn, ctx)
+//	defer conn.Close(ctx)
+//
+//	queries := db.New(conn)
+//
+//	alexResult, err := queries.CreateUser(ctx, "alexResult@gmail.com")
+//	if err != nil {
+//		log.Fatalln("error creating user alexResult:", err)
+//	}
+//	log.Println("user alexResult:", alexResult)
+//
+//	fmt.Println("finished playWithUsersTable")
+//
+//}
 
 func playWithMoviesTable(dsn string) {
 	fmt.Println("starting playWithMoviesTable...")
