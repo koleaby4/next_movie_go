@@ -3,16 +3,26 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"github.com/gorilla/sessions"
 	"github.com/koleaby4/next_movie_go/internal/db"
+	"golang.org/x/crypto/bcrypt"
+	"html/template"
 	"log"
-	"math/rand/v2"
 	"net/http"
-	"time"
+	"strconv"
 )
 
-func (h *Handlers) SendCode(w http.ResponseWriter, r *http.Request) {
+var store = sessions.NewCookieStore([]byte("DUMMY_SESSION_KEY"))
+
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+	return string(bytes), err
+}
+
+func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
+	log.Println("POST /login")
 	email := r.FormValue("email")
-	code := rand.IntN(999_999) // generate a random 6-digit code
+	password := r.FormValue("password")
 
 	ctx := context.Background()
 	conn := db.NewConnection(h.AppConfig.DbDsn, ctx)
@@ -20,26 +30,56 @@ func (h *Handlers) SendCode(w http.ResponseWriter, r *http.Request) {
 
 	queries := db.New(conn)
 	user, err := queries.GetUser(ctx, email)
+
+	hashedPassword, err := HashPassword(password)
 	if err != nil {
-		log.Fatalln("error sending authentication code", err)
+		log.Println("Error hashing password", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	_, err := queries.Upsert().InsertCode(context.Background(), db.InsertCodeParams{
-		Email:     email,
-		Code:      code,
-		CreatedAt: time.Now(),
-	})
+	if user.ID == 0 { // user does not exist
+		log.Println("User does not exist", user)
+		log.Println("hashedPassword", hashedPassword)
+		user, err = queries.UpsertUser(ctx, db.User{Email: email, AuthToken: hashedPassword})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else {
+		log.Println("User exists", user)
+		err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+		if err != nil { // user exists, but password does not match
+			fmt.Println("Passwords do not match")
+			http.Redirect(w, r, "/login", http.StatusUnauthorized)
+		}
+	}
+
+	session, err := store.Get(r, strconv.Itoa(user.ID))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// send the code to the user's email
-	err = sendEmail(email, code) // implement this function to send an email
+	session.Values["AuthToken"] = hashedPassword
+	err = session.Save(r, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/movies/most-popular", http.StatusSeeOther)
+}
+
+func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
+	log.Println("GET /login")
+	tmpl, err := template.ParseFiles("internal/web/templates/login.html", "internal/web/templates/_navbar.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Fprint(w, "Code sent to email")
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
