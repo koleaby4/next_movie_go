@@ -9,6 +9,7 @@ import (
 type AppConfig struct {
 	DbDsn      string     `json:"DSN"`
 	TmdbConfig TmdbConfig `json:"TMDB_CONFIG"`
+	SessionKey string     `json:"SESSION_KEY"`
 }
 
 type TmdbConfig struct {
