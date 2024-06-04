@@ -9,7 +9,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 var cookieStore = sessions.NewCookieStore([]byte("DUMMY_SESSION_KEY"))
@@ -55,7 +54,7 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	session, err := cookieStore.Get(r, strconv.Itoa(user.ID))
+	session, err := cookieStore.Get(r, "user-session")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
