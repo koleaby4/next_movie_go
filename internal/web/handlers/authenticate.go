@@ -14,15 +14,15 @@ import (
 
 var cookieStore = sessions.NewCookieStore([]byte("DUMMY_SESSION_KEY"))
 
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	return string(bytes), err
+func hashPassword(password []byte) ([]byte, error) {
+	bytes, err := bcrypt.GenerateFromPassword(password, 10)
+	return bytes, err
 }
 
 func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /login")
 	email := r.FormValue("email")
-	password := r.FormValue("password")
+	password := []byte(r.FormValue("password"))
 
 	ctx := context.Background()
 	conn := db.NewConnection(h.AppConfig.DbDsn, ctx)
@@ -39,17 +39,20 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 
 	if user.ID == 0 { // user does not exist
 		log.Println("User does not exist", user)
-		user, err = queries.UpsertUser(ctx, db.User{Email: email, AuthToken: hashedPassword})
+		user, err = queries.UpsertUser(ctx, db.User{Email: email, AuthToken: string(hashedPassword)})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	} else {
 		log.Println("User exists", user)
-		err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+		err = bcrypt.CompareHashAndPassword(hashedPassword, password)
 		if err != nil { // user exists, but password does not match
 			fmt.Println("Passwords do not match")
 			http.Redirect(w, r, "/login", http.StatusUnauthorized)
+			return
+		} else {
+			fmt.Println("Passwords match")
 		}
 	}
 
