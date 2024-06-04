@@ -93,3 +93,21 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
+	session, err := cookieStore.Get(r, "user-session")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	delete(session.Values, "AuthToken")
+
+	err = session.Save(r, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}

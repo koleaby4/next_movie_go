@@ -28,5 +28,7 @@ func main() {
 		}
 	})
 
+	http.HandleFunc("/logout", h.Logout)
+
 	http.ListenAndServe(":8080", nil)
 }
