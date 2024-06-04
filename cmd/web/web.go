@@ -15,7 +15,7 @@ func main() {
 
 	h := handlers.New(appConfig)
 
-	http.HandleFunc("/movies/popular", h.PopularMovies)
+	http.HandleFunc("/most-popular-movies", h.MostPopularMovies)
 	http.HandleFunc("/movies/{movie_id}", h.MovieDetail)
 
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {

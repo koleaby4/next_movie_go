@@ -65,7 +65,7 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, "/movies/most-popular", http.StatusSeeOther)
+	http.Redirect(w, r, "/most-popular-movies", http.StatusSeeOther)
 }
 
 func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {

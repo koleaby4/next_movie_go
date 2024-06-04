@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (h *Handlers) PopularMovies(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) MostPopularMovies(w http.ResponseWriter, r *http.Request) {
 	movies, err := tmdb.GetMostPopularMovies(h.AppConfig.TmdbConfig, 8)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
