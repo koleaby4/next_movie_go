@@ -31,14 +31,13 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 	queries := db.New(conn)
 	user, err := queries.GetUser(ctx, email)
 
-	hashedPassword, err := hashPassword(password)
-	if err != nil {
-		log.Println("Error hashing password", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
 	if user.ID == 0 { // user does not exist
 		log.Println("User does not exist", user)
+		hashedPassword, err := hashPassword(password)
+		if err != nil {
+			log.Println("Error hashing password", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		user, err = queries.UpsertUser(ctx, db.User{Email: email, AuthToken: string(hashedPassword)})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -46,10 +45,10 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		log.Println("User exists", user)
-		err = bcrypt.CompareHashAndPassword(hashedPassword, password)
+		err = bcrypt.CompareHashAndPassword([]byte(user.AuthToken), password)
 		if err != nil { // user exists, but password does not match
 			fmt.Println("Passwords do not match")
-			http.Redirect(w, r, "/login", http.StatusUnauthorized)
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		} else {
 			fmt.Println("Passwords match")
@@ -62,7 +61,7 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session.Values["AuthToken"] = hashedPassword
+	session.Values["AuthToken"] = user.AuthToken
 	err = session.Save(r, w)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
