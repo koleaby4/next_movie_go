@@ -12,9 +12,9 @@ import (
 	"strconv"
 )
 
-var store = sessions.NewCookieStore([]byte("DUMMY_SESSION_KEY"))
+var cookieStore = sessions.NewCookieStore([]byte("DUMMY_SESSION_KEY"))
 
-func HashPassword(password string) (string, error) {
+func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 	return string(bytes), err
 }
@@ -31,7 +31,7 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 	queries := db.New(conn)
 	user, err := queries.GetUser(ctx, email)
 
-	hashedPassword, err := HashPassword(password)
+	hashedPassword, err := hashPassword(password)
 	if err != nil {
 		log.Println("Error hashing password", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -39,7 +39,6 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 
 	if user.ID == 0 { // user does not exist
 		log.Println("User does not exist", user)
-		log.Println("hashedPassword", hashedPassword)
 		user, err = queries.UpsertUser(ctx, db.User{Email: email, AuthToken: hashedPassword})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -54,7 +53,7 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	session, err := store.Get(r, strconv.Itoa(user.ID))
+	session, err := cookieStore.Get(r, strconv.Itoa(user.ID))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -77,7 +76,17 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tmpl.Execute(w, nil)
+	session, err := cookieStore.Get(r, "user-session")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	data := map[string]bool{
+		"IsLoggedIn": session.Values["AuthToken"] != nil,
+	}
+
+	err = tmpl.Execute(w, data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
