@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/jackc/pgx/v5"
 	"github.com/koleaby4/next_movie_go/internal/db"
-	"github.com/koleaby4/next_movie_go/internal/models"
 	"github.com/koleaby4/next_movie_go/internal/tmdb"
 	"html/template"
 	"log"
@@ -57,7 +56,7 @@ func (h *Handlers) MovieDetail(w http.ResponseWriter, r *http.Request) {
 
 	data := struct {
 		IsLoggedIn bool
-		Movie      models.Movie
+		Movie      db.Movie
 	}{
 		IsLoggedIn: session.Values["AuthToken"] != nil,
 		Movie:      movie,

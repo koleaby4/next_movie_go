@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/koleaby4/next_movie_go/config"
 	"github.com/koleaby4/next_movie_go/internal/db"
-	"github.com/koleaby4/next_movie_go/internal/models"
 	"github.com/koleaby4/next_movie_go/internal/tmdb"
 	"log"
 	"os"
@@ -39,7 +38,7 @@ func playWithMoviesTable(dsn string) {
 	defer conn.Close(ctx)
 
 	queries := db.New(conn)
-	matrixResult, err := queries.InsertMovie(ctx, models.Movie{ID: 123, Title: "Matrix"})
+	matrixResult, err := queries.InsertMovie(ctx, db.Movie{ID: 123, Title: "Matrix"})
 	if err != nil {
 		return
 	}

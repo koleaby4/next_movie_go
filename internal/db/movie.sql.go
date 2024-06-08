@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-	"github.com/koleaby4/next_movie_go/internal/models"
-
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -37,9 +35,9 @@ from movies
 where id = $1
 `
 
-func (q *Queries) GetMovie(ctx context.Context, id int) (models.Movie, error) {
+func (q *Queries) GetMovie(ctx context.Context, id int) (Movie, error) {
 	row := q.db.QueryRow(ctx, getMovie, id)
-	var i models.Movie
+	var i Movie
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
@@ -59,7 +57,7 @@ values ($1, $2, $3, $4, $5, $6, $7, $8)
 on conflict (id) do nothing
 `
 
-func (q *Queries) InsertMovie(ctx context.Context, arg models.Movie) (pgconn.CommandTag, error) {
+func (q *Queries) InsertMovie(ctx context.Context, arg Movie) (pgconn.CommandTag, error) {
 	return q.db.Exec(ctx, insertMovie,
 		arg.ID,
 		arg.Title,
@@ -85,15 +83,15 @@ from movies
 order by release_date desc
 `
 
-func (q *Queries) ListMovies(ctx context.Context) ([]models.Movie, error) {
+func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
 	rows, err := q.db.Query(ctx, listMovies)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []models.Movie
+	var items []Movie
 	for rows.Next() {
-		var i models.Movie
+		var i Movie
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
