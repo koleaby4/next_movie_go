@@ -59,8 +59,9 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	session.Values["UserID"] = user.ID
 	session.Values["AuthToken"] = user.AuthToken
+
 	err = session.Save(r, w)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/jackc/pgx/v5"
 	"github.com/koleaby4/next_movie_go/internal/db"
+	"github.com/koleaby4/next_movie_go/internal/models"
 	"github.com/koleaby4/next_movie_go/internal/tmdb"
 	"html/template"
 	"log"
@@ -24,6 +25,7 @@ func (h *Handlers) MovieDetail(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	conn := db.NewConnection(h.AppConfig.DbDsn, ctx)
 	defer conn.Close(ctx)
+
 	queries := db.New(conn)
 
 	movie, err := queries.GetMovie(ctx, movieID)
@@ -47,14 +49,29 @@ func (h *Handlers) MovieDetail(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	session, err := cookieStore.Get(r, "user-session")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	data := struct {
+		IsLoggedIn bool
+		Movie      models.Movie
+	}{
+		IsLoggedIn: session.Values["AuthToken"] != nil,
+		Movie:      movie,
+	}
+
 	tmpl, err := template.ParseFiles("internal/web/templates/movie_detail.html", "internal/web/templates/_watched_info_form.html", "internal/web/templates/_navbar.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = tmpl.Execute(w, movie)
+	err = tmpl.Execute(w, data)
 	if err != nil {
+		log.Println("error executing template", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
