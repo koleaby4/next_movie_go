@@ -34,7 +34,7 @@ func GetMovie(config config.TmdbConfig, movieID int) (db.Movie, error) {
 	}
 
 	if len(movies) == 0 {
-		return db.Movie{}, fmt.Errorf("movie with id %s not found", movieID)
+		return db.Movie{}, fmt.Errorf("movie with id %v not found", movieID)
 	}
 
 	return movies[0], nil
