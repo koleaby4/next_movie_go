@@ -47,7 +47,8 @@ import (
 //	fmt.Println("finished playWithMoviesTable")
 //}
 
-func LoadGoodMovies(queries *db2.Queries, cfg config.TmdbConfig, ctx context.Context) (time.Time, error) {
+// LoadGoodMovies loads good movies
+func LoadGoodMovies(ctx context.Context, queries *db2.Queries, cfg config.TmdbConfig) (time.Time, error) {
 	from, err := time.Parse("2006-01-02", cfg.BackloadHighWatermarkDate)
 	if err != nil {
 		return time.Time{}, err
@@ -97,7 +98,7 @@ func main() {
 
 	queries := db2.New(conn)
 
-	watermarkDate, err := LoadGoodMovies(queries, appConfig.TmdbConfig, ctx)
+	watermarkDate, err := LoadGoodMovies(ctx, queries, appConfig.TmdbConfig)
 	if err != nil {
 		log.Fatalln("error in LoadGoodMovies", err)
 	}
