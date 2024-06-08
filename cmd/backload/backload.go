@@ -31,21 +31,21 @@ import (
 //
 //}
 
-func playWithMoviesTable(dsn string) {
-	fmt.Println("starting playWithMoviesTable...")
-	ctx := context.Background()
-	conn := db2.NewConnection(dsn, ctx)
-	defer conn.Close(ctx)
-
-	queries := db2.New(conn)
-	matrixResult, err := queries.InsertMovie(ctx, db2.Movie{ID: 123, Title: "Matrix"})
-	if err != nil {
-		return
-	}
-	log.Println("movie matrixResult:", matrixResult)
-
-	fmt.Println("finished playWithMoviesTable")
-}
+//func playWithMoviesTable(dsn string) {
+//	fmt.Println("starting playWithMoviesTable...")
+//	ctx := context.Background()
+//	conn := db2.NewConnection(dsn, ctx)
+//	defer conn.Close(ctx)
+//
+//	queries := db2.New(conn)
+//	matrixResult, err := queries.InsertMovie(ctx, db2.Movie{ID: 123, Title: "Matrix"})
+//	if err != nil {
+//		return
+//	}
+//	log.Println("movie matrixResult:", matrixResult)
+//
+//	fmt.Println("finished playWithMoviesTable")
+//}
 
 func LoadGoodMovies(queries *db2.Queries, cfg config.TmdbConfig, ctx context.Context) (time.Time, error) {
 	from, err := time.Parse("2006-01-02", cfg.BackloadHighWatermarkDate)
@@ -132,15 +132,15 @@ func updateHighWatermark(newWatermark time.Time, configPath string) error {
 	return nil
 }
 
-func playWithMostPopularMovies(cfg config.TmdbConfig, minRating float64) {
-	mostPopularMovies, err := tmdb.GetMostPopularMovies(cfg, minRating)
-
-	if err != nil {
-		log.Fatalln("error getting most popular movies", err)
-	}
-
-	fmt.Println("number of most popular movies fetched:", len(mostPopularMovies))
-	for _, movie := range mostPopularMovies {
-		fmt.Println(movie.Title, movie.Rating, movie.PosterUrl, movie.TrailerUrl)
-	}
-}
+//func playWithMostPopularMovies(cfg config.TmdbConfig, minRating float64) {
+//	mostPopularMovies, err := tmdb.GetMostPopularMovies(cfg, minRating)
+//
+//	if err != nil {
+//		log.Fatalln("error getting most popular movies", err)
+//	}
+//
+//	fmt.Println("number of most popular movies fetched:", len(mostPopularMovies))
+//	for _, movie := range mostPopularMovies {
+//		fmt.Println(movie.Title, movie.Rating, movie.PosterUrl, movie.TrailerUrl)
+//	}
+//}
