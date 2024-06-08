@@ -29,6 +29,9 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 
 	queries := db2.New(conn)
 	user, err := queries.GetUser(ctx, email)
+	if err != nil {
+		log.Printf("error (%v) fetching user with email=%v\n", err, email)
+	}
 
 	if user.ID == 0 { // user does not exist
 		log.Println("User does not exist", user)
