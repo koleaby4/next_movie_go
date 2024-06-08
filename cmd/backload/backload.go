@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/koleaby4/next_movie_go/config"
-	"github.com/koleaby4/next_movie_go/internal/db"
-	"github.com/koleaby4/next_movie_go/internal/tmdb"
+	db2 "github.com/koleaby4/next_movie_go/db"
+	"github.com/koleaby4/next_movie_go/tmdb"
 	"log"
 	"os"
 	"time"
@@ -34,11 +34,11 @@ import (
 func playWithMoviesTable(dsn string) {
 	fmt.Println("starting playWithMoviesTable...")
 	ctx := context.Background()
-	conn := db.NewConnection(dsn, ctx)
+	conn := db2.NewConnection(dsn, ctx)
 	defer conn.Close(ctx)
 
-	queries := db.New(conn)
-	matrixResult, err := queries.InsertMovie(ctx, db.Movie{ID: 123, Title: "Matrix"})
+	queries := db2.New(conn)
+	matrixResult, err := queries.InsertMovie(ctx, db2.Movie{ID: 123, Title: "Matrix"})
 	if err != nil {
 		return
 	}
@@ -47,7 +47,7 @@ func playWithMoviesTable(dsn string) {
 	fmt.Println("finished playWithMoviesTable")
 }
 
-func LoadGoodMovies(queries *db.Queries, cfg config.TmdbConfig, ctx context.Context) (time.Time, error) {
+func LoadGoodMovies(queries *db2.Queries, cfg config.TmdbConfig, ctx context.Context) (time.Time, error) {
 	from, err := time.Parse("2006-01-02", cfg.BackloadHighWatermarkDate)
 	if err != nil {
 		return time.Time{}, err
@@ -92,10 +92,10 @@ func main() {
 	}
 
 	ctx := context.Background()
-	conn := db.NewConnection(appConfig.DbDsn, ctx)
+	conn := db2.NewConnection(appConfig.DbDsn, ctx)
 	defer conn.Close(ctx)
 
-	queries := db.New(conn)
+	queries := db2.New(conn)
 
 	watermarkDate, err := LoadGoodMovies(queries, appConfig.TmdbConfig, ctx)
 	if err != nil {

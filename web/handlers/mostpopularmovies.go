@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"github.com/koleaby4/next_movie_go/internal/db"
-	"github.com/koleaby4/next_movie_go/internal/tmdb"
+	"github.com/koleaby4/next_movie_go/db"
+	"github.com/koleaby4/next_movie_go/tmdb"
 	"html/template"
 	"net/http"
 )

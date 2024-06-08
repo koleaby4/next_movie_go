@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"github.com/jackc/pgx/v5"
-	"github.com/koleaby4/next_movie_go/internal/db"
-	"github.com/koleaby4/next_movie_go/internal/tmdb"
+	db2 "github.com/koleaby4/next_movie_go/db"
+	"github.com/koleaby4/next_movie_go/tmdb"
 	"html/template"
 	"log"
 	"net/http"
@@ -22,10 +22,10 @@ func (h *Handlers) MovieDetail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := context.Background()
-	conn := db.NewConnection(h.AppConfig.DbDsn, ctx)
+	conn := db2.NewConnection(h.AppConfig.DbDsn, ctx)
 	defer conn.Close(ctx)
 
-	queries := db.New(conn)
+	queries := db2.New(conn)
 
 	movie, err := queries.GetMovie(ctx, movieID)
 	if err != nil {
@@ -56,7 +56,7 @@ func (h *Handlers) MovieDetail(w http.ResponseWriter, r *http.Request) {
 
 	data := struct {
 		IsLoggedIn bool
-		Movie      db.Movie
+		Movie      db2.Movie
 	}{
 		IsLoggedIn: session.Values["AuthToken"] != nil,
 		Movie:      movie,

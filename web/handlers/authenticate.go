@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gorilla/sessions"
-	"github.com/koleaby4/next_movie_go/internal/db"
+	db2 "github.com/koleaby4/next_movie_go/db"
 	"golang.org/x/crypto/bcrypt"
 	"html/template"
 	"log"
@@ -24,10 +24,10 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 	password := []byte(r.FormValue("password"))
 
 	ctx := context.Background()
-	conn := db.NewConnection(h.AppConfig.DbDsn, ctx)
+	conn := db2.NewConnection(h.AppConfig.DbDsn, ctx)
 	defer conn.Close(ctx)
 
-	queries := db.New(conn)
+	queries := db2.New(conn)
 	user, err := queries.GetUser(ctx, email)
 
 	if user.ID == 0 { // user does not exist
@@ -37,7 +37,7 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 			log.Println("Error hashing password", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-		user, err = queries.UpsertUser(ctx, db.User{Email: email, AuthToken: string(hashedPassword)})
+		user, err = queries.UpsertUser(ctx, db2.User{Email: email, AuthToken: string(hashedPassword)})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

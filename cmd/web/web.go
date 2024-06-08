@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/koleaby4/next_movie_go/config"
-	"github.com/koleaby4/next_movie_go/internal/web/handlers"
+	"github.com/koleaby4/next_movie_go/web/handlers"
 	"log"
 	"net/http"
 )

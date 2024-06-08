@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/koleaby4/next_movie_go/config"
-	"github.com/koleaby4/next_movie_go/internal/db"
+	"github.com/koleaby4/next_movie_go/db"
 	"io"
 	"log"
 	"net/http"
