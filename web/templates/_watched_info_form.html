@@ -10,7 +10,6 @@
     <div id="watchedInfoCollapse" class="collapse" aria-labelledby="watchedInfoHeading" data-parent="#watchedInfoAccordion">
       <div class="card-body">
         <form action="/movies/{{.Movie.ID}}/watched_status" method="post">
-          <input type="hidden" name="user_id" value="42">
           <input type="radio" id="not-watched" name="opinion" value="not-watched">
           <label for="not-watched">Not Watched</label><br>
           <input type="radio" id="liked" name="opinion" value="liked">
