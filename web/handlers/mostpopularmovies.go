@@ -14,7 +14,7 @@ func (h *Handlers) MostPopularMovies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl, err := template.ParseFiles("internal/web/templates/movies.html", "internal/web/templates/_navbar.html")
+	tmpl, err := template.ParseFiles("web/templates/movies.html", "web/templates/_navbar.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

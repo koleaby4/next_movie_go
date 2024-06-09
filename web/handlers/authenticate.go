@@ -73,7 +73,7 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /login")
-	tmpl, err := template.ParseFiles("internal/web/templates/login.html", "internal/web/templates/_navbar.html")
+	tmpl, err := template.ParseFiles("web/templates/login.html", "web/templates/_navbar.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

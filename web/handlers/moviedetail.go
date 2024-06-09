@@ -60,7 +60,7 @@ func (h *Handlers) MovieDetail(w http.ResponseWriter, r *http.Request) {
 		Movie:      movie,
 	}
 
-	tmpl, err := template.ParseFiles("internal/web/templates/movie_detail.html", "internal/web/templates/_watched_info_form.html", "internal/web/templates/_navbar.html")
+	tmpl, err := template.ParseFiles("web/templates/movie_detail.html", "web/templates/_watched_info_form.html", "web/templates/_navbar.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
