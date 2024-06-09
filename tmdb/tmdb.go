@@ -44,7 +44,7 @@ func GetMovie(config config.TmdbConfig, movieID int) (db.Movie, error) {
 }
 
 // GetMovies fetches movies from the TMDB API
-func GetMovies(cfg config.TmdbConfig, prefixUrl string, top int) ([]db.Movie, error) {
+func GetMovies(cfg config.TmdbConfig, prefixURL string, top int) ([]db.Movie, error) {
 	page := 1
 	var movies []db.Movie
 	var url string
@@ -52,10 +52,10 @@ func GetMovies(cfg config.TmdbConfig, prefixUrl string, top int) ([]db.Movie, er
 	for {
 		tail := fmt.Sprintf("page=%d&api_key=%s", page, cfg.APIKey)
 
-		if strings.Contains(prefixUrl, "?") {
-			url = prefixUrl + "&" + tail
+		if strings.Contains(prefixURL, "?") {
+			url = prefixURL + "&" + tail
 		} else {
-			url = prefixUrl + "?" + tail
+			url = prefixURL + "?" + tail
 		}
 
 		log.Println("url", url)
@@ -127,21 +127,21 @@ func EnrichMoviesInfo(cfg config.TmdbConfig, movies []db.Movie) []db.Movie {
 
 	for i := range movies {
 		movie := &movies[i]
-		go addTrailerUrl(cfg, movie, &wg)
-		expandPosterUrl(movie)
+		go addTrailerURL(cfg, movie, &wg)
+		expandPosterURL(movie)
 	}
 	wg.Wait()
 
 	return movies
 }
 
-func expandPosterUrl(movie *db.Movie) {
+func expandPosterURL(movie *db.Movie) {
 	if movie.PosterUrl != "" {
 		movie.PosterUrl = "https://image.tmdb.org/t/p/original" + "/" + strings.Trim(movie.PosterUrl, "/")
 	}
 }
 
-func addTrailerUrl(cfg config.TmdbConfig, movie *db.Movie, wg *sync.WaitGroup) {
+func addTrailerURL(cfg config.TmdbConfig, movie *db.Movie, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	videosUrl := fmt.Sprintf("%s/movie/%d/videos?api_key=%s", cfg.BaseURL, movie.ID, cfg.APIKey)
