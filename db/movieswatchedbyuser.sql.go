@@ -59,13 +59,8 @@ where user_id = $1
   and movie_id = $2
 `
 
-type RemoveMovieWatchedByUserParams struct {
-	UserID  int
-	MovieID int
-}
-
-func (q *Queries) RemoveMovieWatchedByUser(ctx context.Context, arg RemoveMovieWatchedByUserParams) error {
-	_, err := q.db.Exec(ctx, removeMovieWatchedByUser, arg.UserID, arg.MovieID)
+func (q *Queries) RemoveMovieWatchedByUser(ctx context.Context, userID int, movieID int) error {
+	_, err := q.db.Exec(ctx, removeMovieWatchedByUser, userID, movieID)
 	return err
 }
 
