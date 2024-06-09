@@ -13,12 +13,14 @@ import (
 	"time"
 )
 
+// MovieSearchResults is the response from the TMDB API
 type MovieSearchResults struct {
 	Results    []db.Movie `json:"results"`
 	Page       int        `json:"page"`
 	TotalPages int        `json:"total_pages"`
 }
 
+// VideoResult is the response from the TMDB API
 type VideoResult struct {
 	Results []struct {
 		Key  string `json:"key"`
@@ -26,6 +28,7 @@ type VideoResult struct {
 	} `json:"results"`
 }
 
+// GetMovie fetches a movie by its ID
 func GetMovie(config config.TmdbConfig, movieID int) (db.Movie, error) {
 	url := fmt.Sprintf("%s/movie/%v", config.BaseURL, movieID)
 	movies, err := GetMovies(config, url, 1)
@@ -40,6 +43,7 @@ func GetMovie(config config.TmdbConfig, movieID int) (db.Movie, error) {
 	return movies[0], nil
 }
 
+// GetMovies fetches movies from the TMDB API
 func GetMovies(cfg config.TmdbConfig, prefixUrl string, top int) ([]db.Movie, error) {
 	page := 1
 	var movies []db.Movie
@@ -104,6 +108,7 @@ func GetMovies(cfg config.TmdbConfig, prefixUrl string, top int) ([]db.Movie, er
 	return EnrichMoviesInfo(cfg, movies), nil
 }
 
+// GetMoviesReleasedBetween fetches movies released between two dates
 func GetMoviesReleasedBetween(cfg config.TmdbConfig, from time.Time, to time.Time, minRating float64) ([]db.Movie, error) {
 	urlPattern := "%s/discover/movie?primary_release_date.gte=%v&primary_release_date.lte=%v&vote_average.gte=%v&sort_by=release_date.desc"
 	url := fmt.Sprintf(urlPattern, cfg.BaseURL, from.Format("2006-01-02"), to.Format("2006-01-02"), minRating)
@@ -115,6 +120,7 @@ func GetMoviesReleasedBetween(cfg config.TmdbConfig, from time.Time, to time.Tim
 	return movies, nil
 }
 
+// EnrichMoviesInfo enriches movie information
 func EnrichMoviesInfo(cfg config.TmdbConfig, movies []db.Movie) []db.Movie {
 	wg := sync.WaitGroup{}
 	wg.Add(len(movies))
@@ -167,6 +173,7 @@ func addTrailerUrl(cfg config.TmdbConfig, movie *db.Movie, wg *sync.WaitGroup) {
 	}
 }
 
+// GetMostPopularMovies fetches the most popular movies
 func GetMostPopularMovies(cfg config.TmdbConfig, minRating float64) ([]db.Movie, error) {
 	url := fmt.Sprintf("%s/discover/movie?vote_average.gte=%v", cfg.BaseURL, minRating)
 	return GetMovies(cfg, url, 20)
