@@ -7,24 +7,7 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgconn"
 )
-
-const addMovieWatchedByUser = `-- name: AddMovieWatchedByUser :execresult
-insert into movies_watched_by_user (user_id, movie_id, experience_stars)
-values ($1, $2, $3)
-`
-
-type AddMovieWatchedByUserParams struct {
-	UserID          int
-	MovieID         int
-	ExperienceStars int
-}
-
-func (q *Queries) AddMovieWatchedByUser(ctx context.Context, arg AddMovieWatchedByUserParams) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, addMovieWatchedByUser, arg.UserID, arg.MovieID, arg.ExperienceStars)
-}
 
 const getMoviesWatchedByUser = `-- name: GetMoviesWatchedByUser :many
 select user_id, movie_id, experience_stars
@@ -64,14 +47,14 @@ func (q *Queries) RemoveMovieWatchedByUser(ctx context.Context, userID int, movi
 	return err
 }
 
-const updateMovieWatchedByUser = `-- name: UpdateMovieWatchedByUser :exec
-update movies_watched_by_user
-set experience_stars = $1
-where user_id = $2
-  and movie_id = $3
+const upsertMovieWatchedByUser = `-- name: UpsertMovieWatchedByUser :exec
+INSERT INTO movies_watched_by_user (user_id, movie_id, experience_stars)
+VALUES ($1, $2, $3)
+ON CONFLICT (user_id, movie_id)
+    DO UPDATE SET experience_stars = EXCLUDED.experience_stars
 `
 
-func (q *Queries) UpdateMovieWatchedByUser(ctx context.Context, experienceStars int, userID int, movieID int) error {
-	_, err := q.db.Exec(ctx, updateMovieWatchedByUser, experienceStars, userID, movieID)
+func (q *Queries) UpsertMovieWatchedByUser(ctx context.Context, userID int, movieID int, experienceStars int) error {
+	_, err := q.db.Exec(ctx, upsertMovieWatchedByUser, userID, movieID, experienceStars)
 	return err
 }

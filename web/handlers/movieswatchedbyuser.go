@@ -58,7 +58,7 @@ func (h *Handlers) UpdateWatchedStatus(w http.ResponseWriter, r *http.Request) {
 	if opinion == 0 {
 		err = queries.RemoveMovieWatchedByUser(ctx, userID, movieID)
 	} else {
-		_, err = queries.AddMovieWatchedByUser(ctx, userID, movieID, opinion)
+		err = queries.UpsertMovieWatchedByUser(ctx, userID, movieID, opinion)
 	}
 
 	if err != nil {

@@ -40,7 +40,7 @@ type UpsertUserParams struct {
 	AuthToken string
 }
 
-func (q *Queries) UpsertUser(ctx context.Context, arg User) (User, error) {
+func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error) {
 	row := q.db.QueryRow(ctx, upsertUser, arg.Email, arg.AuthToken)
 	var i User
 	err := row.Scan(
