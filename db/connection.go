@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func NewConnection(dsn string, ctx context.Context) *pgx.Conn {
+func NewConnection(ctx context.Context, dsn string) *pgx.Conn {
 	conn, err := pgx.Connect(ctx, dsn)
 
 	if err != nil {

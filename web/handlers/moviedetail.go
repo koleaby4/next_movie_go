@@ -22,7 +22,7 @@ func (h *Handlers) MovieDetail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := context.Background()
-	conn := db2.NewConnection(h.AppConfig.DbDsn, ctx)
+	conn := db2.NewConnection(ctx, h.AppConfig.DbDsn)
 	defer conn.Close(ctx)
 
 	queries := db2.New(conn)
