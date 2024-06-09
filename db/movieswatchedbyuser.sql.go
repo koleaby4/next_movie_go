@@ -67,16 +67,11 @@ func (q *Queries) RemoveMovieWatchedByUser(ctx context.Context, userID int, movi
 const updateMovieWatchedByUser = `-- name: UpdateMovieWatchedByUser :exec
 update movies_watched_by_user
 set experience_stars = $1
-where user_id = $1
-  and movie_id = $2
+where user_id = $2
+  and movie_id = $3
 `
 
-type UpdateMovieWatchedByUserParams struct {
-	ExperienceStars int
-	MovieID         int
-}
-
-func (q *Queries) UpdateMovieWatchedByUser(ctx context.Context, arg UpdateMovieWatchedByUserParams) error {
-	_, err := q.db.Exec(ctx, updateMovieWatchedByUser, arg.ExperienceStars, arg.MovieID)
+func (q *Queries) UpdateMovieWatchedByUser(ctx context.Context, experienceStars int, userID int, movieID int) error {
+	_, err := q.db.Exec(ctx, updateMovieWatchedByUser, experienceStars, userID, movieID)
 	return err
 }
