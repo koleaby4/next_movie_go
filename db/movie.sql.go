@@ -7,20 +7,9 @@ package db
 
 import (
 	"context"
+
 	"github.com/jackc/pgx/v5/pgconn"
 )
-
-const getLastKnownReleaseDate = `-- name: GetLastKnownReleaseDate :one
-select max(release_date) as release_date
-from movies
-`
-
-func (q *Queries) GetLastKnownReleaseDate(ctx context.Context) (interface{}, error) {
-	row := q.db.QueryRow(ctx, getLastKnownReleaseDate)
-	var release_date interface{}
-	err := row.Scan(&release_date)
-	return release_date, err
-}
 
 const getMovie = `-- name: GetMovie :one
 select id,

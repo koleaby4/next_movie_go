@@ -27,7 +27,3 @@ insert into movies (id, title, release_date, overview, rating, poster_url, trail
 values ($1, $2, $3, $4, $5, $6, $7, $8)
 on conflict (id) do nothing;
 
-
--- name: GetLastKnownReleaseDate :one
-select max(release_date) as release_date
-from movies;
