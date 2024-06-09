@@ -17,6 +17,7 @@ func main() {
 
 	http.HandleFunc("/most-popular-movies", h.MostPopularMovies)
 	http.HandleFunc("/movies/{movie_id}", h.MovieDetail)
+	http.HandleFunc("/movies/{movie_id}/watched_status", h.UpdateWatchedStatus)
 
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
