@@ -16,6 +16,6 @@ where user_id = $1
 -- name: UpdateMovieWatchedByUser :exec
 update movies_watched_by_user
 set experience_stars = $1
-where user_id = $1
-  and movie_id = $2;
+where user_id = $2
+  and movie_id = $3;
 
