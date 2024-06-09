@@ -38,7 +38,7 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 			log.Println("Error hashing password", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-		user, err = queries.UpsertUser(ctx, db2.User{Email: email, AuthToken: string(hashedPassword)})
+		user, err = queries.UpsertUser(ctx, email, string(hashedPassword))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

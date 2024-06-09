@@ -35,13 +35,8 @@ UPDATE SET auth_token = $2, expiry = NOW() + INTERVAL '24 hours'
     RETURNING id, email, auth_token, expiry
 `
 
-type UpsertUserParams struct {
-	Email     string
-	AuthToken string
-}
-
-func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, upsertUser, arg.Email, arg.AuthToken)
+func (q *Queries) UpsertUser(ctx context.Context, email string, authToken string) (User, error) {
+	row := q.db.QueryRow(ctx, upsertUser, email, authToken)
 	var i User
 	err := row.Scan(
 		&i.ID,
