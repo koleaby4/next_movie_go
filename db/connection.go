@@ -6,11 +6,12 @@ import (
 	"log"
 )
 
-func NewConnection(ctx context.Context, dsn string) *pgx.Conn {
+func NewConnection(dsn string) (*pgx.Conn, context.Context) {
+	ctx := context.Background()
 	conn, err := pgx.Connect(ctx, dsn)
 
 	if err != nil {
 		log.Fatalln("error connecting to db:", err)
 	}
-	return conn
+	return conn, ctx
 }

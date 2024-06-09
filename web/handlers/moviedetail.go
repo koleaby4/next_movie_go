@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"errors"
 	"github.com/jackc/pgx/v5"
 	db2 "github.com/koleaby4/next_movie_go/db"
@@ -21,8 +20,7 @@ func (h *Handlers) MovieDetail(w http.ResponseWriter, r *http.Request) {
 		log.Printf("error parsing movie id=%v; err=%v\n", movieIdStr, err)
 	}
 
-	ctx := context.Background()
-	conn := db2.NewConnection(ctx, h.AppConfig.DbDsn)
+	conn, ctx := db2.NewConnection(h.AppConfig.DbDsn)
 	defer conn.Close(ctx)
 
 	queries := db2.New(conn)

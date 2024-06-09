@@ -92,8 +92,7 @@ func main() {
 		log.Fatalln("error reading config file", err)
 	}
 
-	ctx := context.Background()
-	conn := db2.NewConnection(ctx, appConfig.DbDsn)
+	conn, ctx := db2.NewConnection(appConfig.DbDsn)
 	defer conn.Close(ctx)
 
 	queries := db2.New(conn)
