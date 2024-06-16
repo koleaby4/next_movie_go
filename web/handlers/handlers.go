@@ -1,14 +1,14 @@
 package handlers
 
 import (
-	"github.com/koleaby4/next_movie_go/config"
+	"github.com/koleaby4/next_movie_go"
 )
 
 type Handlers struct {
-	AppConfig config.AppConfig
+	AppConfig next_movie_go.AppConfig
 }
 
-func New(cfg config.AppConfig) *Handlers {
+func New(cfg next_movie_go.AppConfig) *Handlers {
 	return &Handlers{
 		AppConfig: cfg,
 	}

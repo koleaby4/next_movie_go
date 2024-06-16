@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/koleaby4/next_movie_go/config"
+	"github.com/koleaby4/next_movie_go"
 	"github.com/koleaby4/next_movie_go/web/handlers"
 	"log"
 	"net/http"
 )
 
 func main() {
-	appConfig, err := config.ReadFromFile("config/.env.json")
+	appConfig, err := next_movie_go.GetAppConfig()
 	if err != nil {
 		log.Fatalln("error reading config file", err)
 	}

@@ -3,7 +3,7 @@ package tmdb
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/koleaby4/next_movie_go/config"
+	"github.com/koleaby4/next_movie_go"
 	"github.com/koleaby4/next_movie_go/db"
 	"io"
 	"log"
@@ -29,7 +29,7 @@ type VideoResult struct {
 }
 
 // GetMovie fetches a movie by its ID
-func GetMovie(config config.TmdbConfig, movieID int) (db.Movie, error) {
+func GetMovie(config next_movie_go.TmdbConfig, movieID int) (db.Movie, error) {
 	url := fmt.Sprintf("%s/movie/%v", config.BaseURL, movieID)
 	movies, err := GetMovies(config, url, 1)
 	if err != nil {
@@ -44,7 +44,7 @@ func GetMovie(config config.TmdbConfig, movieID int) (db.Movie, error) {
 }
 
 // GetMovies fetches movies from the TMDB API
-func GetMovies(cfg config.TmdbConfig, prefixURL string, top int) ([]db.Movie, error) {
+func GetMovies(cfg next_movie_go.TmdbConfig, prefixURL string, top int) ([]db.Movie, error) {
 	page := 1
 	var movies []db.Movie
 	var url string
@@ -109,7 +109,7 @@ func GetMovies(cfg config.TmdbConfig, prefixURL string, top int) ([]db.Movie, er
 }
 
 // GetMoviesReleasedBetween fetches movies released between two dates
-func GetMoviesReleasedBetween(cfg config.TmdbConfig, from time.Time, to time.Time, minRating float64) ([]db.Movie, error) {
+func GetMoviesReleasedBetween(cfg next_movie_go.TmdbConfig, from time.Time, to time.Time, minRating float64) ([]db.Movie, error) {
 	urlPattern := "%s/discover/movie?primary_release_date.gte=%v&primary_release_date.lte=%v&vote_average.gte=%v&sort_by=release_date.desc"
 	url := fmt.Sprintf(urlPattern, cfg.BaseURL, from.Format("2006-01-02"), to.Format("2006-01-02"), minRating)
 
@@ -121,7 +121,7 @@ func GetMoviesReleasedBetween(cfg config.TmdbConfig, from time.Time, to time.Tim
 }
 
 // EnrichMoviesInfo enriches movie information
-func EnrichMoviesInfo(cfg config.TmdbConfig, movies []db.Movie) []db.Movie {
+func EnrichMoviesInfo(cfg next_movie_go.TmdbConfig, movies []db.Movie) []db.Movie {
 	wg := sync.WaitGroup{}
 	wg.Add(len(movies))
 
@@ -141,7 +141,7 @@ func expandPosterURL(movie *db.Movie) {
 	}
 }
 
-func addTrailerURL(cfg config.TmdbConfig, movie *db.Movie, wg *sync.WaitGroup) {
+func addTrailerURL(cfg next_movie_go.TmdbConfig, movie *db.Movie, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	videosUrl := fmt.Sprintf("%s/movie/%d/videos?api_key=%s", cfg.BaseURL, movie.ID, cfg.APIKey)
@@ -174,7 +174,7 @@ func addTrailerURL(cfg config.TmdbConfig, movie *db.Movie, wg *sync.WaitGroup) {
 }
 
 // GetMostPopularMovies fetches the most popular movies
-func GetMostPopularMovies(cfg config.TmdbConfig, minRating float64) ([]db.Movie, error) {
+func GetMostPopularMovies(cfg next_movie_go.TmdbConfig, minRating float64) ([]db.Movie, error) {
 	url := fmt.Sprintf("%s/discover/movie?vote_average.gte=%v", cfg.BaseURL, minRating)
 	return GetMovies(cfg, url, 20)
 }

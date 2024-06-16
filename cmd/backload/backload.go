@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"github.com/koleaby4/next_movie_go/config"
+	"github.com/koleaby4/next_movie_go"
 	db2 "github.com/koleaby4/next_movie_go/db"
 	"github.com/koleaby4/next_movie_go/tmdb"
 	"log"
 	"os"
+	"regexp"
 	"time"
 )
 
@@ -48,7 +48,7 @@ import (
 //}
 
 // LoadGoodMovies loads good movies
-func LoadGoodMovies(ctx context.Context, queries *db2.Queries, cfg config.TmdbConfig) (time.Time, error) {
+func LoadGoodMovies(ctx context.Context, queries *db2.Queries, cfg next_movie_go.TmdbConfig) (time.Time, error) {
 	from, err := time.Parse("2006-01-02", cfg.BackloadHighWatermarkDate)
 	if err != nil {
 		return time.Time{}, err
@@ -85,8 +85,8 @@ func LoadGoodMovies(ctx context.Context, queries *db2.Queries, cfg config.TmdbCo
 }
 
 func main() {
-	configPath := "config/.env.json"
-	appConfig, err := config.ReadFromFile(configPath)
+
+	appConfig, err := next_movie_go.GetAppConfig()
 
 	if err != nil {
 		log.Fatalln("error reading config file", err)
@@ -101,31 +101,28 @@ func main() {
 	if err != nil {
 		log.Fatalln("error in LoadGoodMovies", err)
 	}
-	updateHighWatermark(watermarkDate, configPath)
+	err = updateHighWatermark(watermarkDate, ".env")
+	if err != nil {
+		log.Fatalln("error updating high watermark", err)
+	}
 
 	fmt.Println("finished backload")
 
 }
 
 func updateHighWatermark(newWatermark time.Time, configPath string) error {
-	appConfig, err := config.ReadFromFile(configPath)
-
+	data, err := os.ReadFile(configPath)
 	if err != nil {
-		log.Println("error reading config file", err)
 		return err
 	}
 
-	appConfig.TmdbConfig.BackloadHighWatermarkDate = newWatermark.Format("2006-01-02")
+	newWatermarkStr := "TMDB_BACKLOAD_HIGH_WATERMARK_DATE=" + newWatermark.Format("2006-01-02")
 
-	configContent, err := json.MarshalIndent(appConfig, "", "  ")
-	if err != nil {
-		log.Println("error marshalling json", err)
-		return err
-	}
+	re := regexp.MustCompile(`TMDB_BACKLOAD_HIGH_WATERMARK_DATE=\d{4}-\d{2}-\d{2}`)
+	updatedContent := re.ReplaceAllString(string(data), newWatermarkStr)
 
-	err = os.WriteFile(configPath, configContent, 0644)
+	err = os.WriteFile(configPath, []byte(updatedContent), 0644)
 	if err != nil {
-		log.Println("error writing to config file", err)
 		return err
 	}
 
