@@ -21,6 +21,7 @@ type TmdbConfig struct {
 	BackloadHighWatermarkDate string
 }
 
+// GetEnvar reads the environment variable
 func GetEnvar(key string) string {
 	err := godotenv.Load(".env")
 
