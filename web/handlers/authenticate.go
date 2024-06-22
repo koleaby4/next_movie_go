@@ -71,6 +71,7 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/most-popular-movies", http.StatusSeeOther)
 }
 
+// Login handles the login GET request
 func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /login")
 	tmpl, err := template.ParseFiles("web/templates/login.html", "web/templates/_navbar.html")
@@ -96,6 +97,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Logout handles the logout request
 func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
 	session, err := cookieStore.Get(r, "user-session")
 	if err != nil {
