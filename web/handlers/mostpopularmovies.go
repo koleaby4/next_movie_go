@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// MostPopularMovies handles the most popular movies request
 func (h *Handlers) MostPopularMovies(w http.ResponseWriter, r *http.Request) {
 	movies, err := tmdb.GetMostPopularMovies(h.AppConfig.TmdbConfig, 8)
 	if err != nil {
