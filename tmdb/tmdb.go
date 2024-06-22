@@ -144,17 +144,17 @@ func expandPosterURL(movie *db.Movie) {
 func addTrailerURL(cfg next_movie_go.TmdbConfig, movie *db.Movie, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	videosUrl := fmt.Sprintf("%s/movie/%d/videos?api_key=%s", cfg.BaseURL, movie.ID, cfg.APIKey)
-	videoResp, err := http.Get(videosUrl)
+	videosURL := fmt.Sprintf("%s/movie/%d/videos?api_key=%s", cfg.BaseURL, movie.ID, cfg.APIKey)
+	videoResp, err := http.Get(videosURL)
 	if err != nil {
-		log.Println("error fetching video url=", videosUrl, err)
+		log.Println("error fetching video url=", videosURL, err)
 		return
 	}
 	defer videoResp.Body.Close()
 
 	videoBody, err := io.ReadAll(videoResp.Body)
 	if err != nil {
-		log.Printf("error reading videoResp.Body for videosUrl=%v, err=%v\n", videosUrl, err)
+		log.Printf("error reading videoResp.Body for videosURL=%v, err=%v\n", videosURL, err)
 		return
 	}
 
