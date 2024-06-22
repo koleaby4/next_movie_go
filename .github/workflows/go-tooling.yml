@@ -81,4 +81,7 @@ jobs:
           go-version: 1.22
 
       - name: Run tests
-        run: go test --cover -race -vet=off ./...
+        run: go test -race -vet=off -coverprofile='c.out' ./...
+
+      - name: Run tests
+        run: go tool cover -html='c.out' -o coverage.html
