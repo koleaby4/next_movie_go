@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// UpdateWatchedStatus updates the watched status of a movie for a user
 func (h *Handlers) UpdateWatchedStatus(w http.ResponseWriter, r *http.Request) {
 	pathSegments := strings.Split(r.URL.Path, "/")
 	if len(pathSegments) < 3 {
