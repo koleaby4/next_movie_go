@@ -17,6 +17,7 @@ func hashPassword(password []byte) ([]byte, error) {
 	return bytes, err
 }
 
+// LoginPost handles the login POST request
 func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /login")
 	email := r.FormValue("email")
@@ -43,17 +44,16 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	} else {
-		log.Println("User exists", user)
-		err = bcrypt.CompareHashAndPassword([]byte(user.AuthToken), password)
-		if err != nil { // user exists, but password does not match
-			fmt.Println("Passwords do not match")
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
-		} else {
-			fmt.Println("Passwords match")
-		}
 	}
+
+	log.Println("User exists", user)
+	err = bcrypt.CompareHashAndPassword([]byte(user.AuthToken), password)
+	if err != nil { // user exists, but password does not match
+		fmt.Println("Passwords do not match")
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+	fmt.Println("Passwords match")
 
 	session, err := cookieStore.Get(r, "user-session")
 	if err != nil {
