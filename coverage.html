@@ -1,0 +1,775 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>next_movie_go: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/koleaby4/next_movie_go/config.go (0.0%)</option>
+				
+				<option value="file1">github.com/koleaby4/next_movie_go/db/connection.go (0.0%)</option>
+				
+				<option value="file2">github.com/koleaby4/next_movie_go/db/db.go (0.0%)</option>
+				
+				<option value="file3">github.com/koleaby4/next_movie_go/db/movie.sql.go (0.0%)</option>
+				
+				<option value="file4">github.com/koleaby4/next_movie_go/db/movieswatchedbyuser.sql.go (0.0%)</option>
+				
+				<option value="file5">github.com/koleaby4/next_movie_go/db/user.sql.go (0.0%)</option>
+				
+				<option value="file6">github.com/koleaby4/next_movie_go/web/handlers/authenticate.go (0.0%)</option>
+				
+				<option value="file7">github.com/koleaby4/next_movie_go/web/handlers/handlers.go (0.0%)</option>
+				
+				<option value="file8">github.com/koleaby4/next_movie_go/web/handlers/mostpopularmovies.go (0.0%)</option>
+				
+				<option value="file9">github.com/koleaby4/next_movie_go/web/handlers/moviedetail.go (0.0%)</option>
+				
+				<option value="file10">github.com/koleaby4/next_movie_go/web/handlers/movieswatchedbyuser.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package next_movie_go
+
+import (
+        "fmt"
+        "github.com/joho/godotenv"
+        "log"
+        "os"
+)
+
+// AppConfig is the configuration for the app
+type AppConfig struct {
+        DbDsn      string
+        TmdbConfig TmdbConfig
+        SessionKey string
+}
+
+// TmdbConfig is the configuration for the tmdb api
+type TmdbConfig struct {
+        APIKey                    string
+        BaseURL                   string
+        BackloadHighWatermarkDate string
+}
+
+func GetEnvar(key string) string <span class="cov0" title="0">{
+        err := godotenv.Load(".env")
+
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalln("Error loading .env file", err)
+        }</span>
+        <span class="cov0" title="0">if val := os.Getenv(key); val != "" </span><span class="cov0" title="0">{
+                return val
+        }</span>
+        <span class="cov0" title="0">log.Fatalf("Environment variable %s not set", key)
+        return ""</span>
+}
+
+// GetAppConfig reads the config from a file
+func GetAppConfig() (AppConfig, error) <span class="cov0" title="0">{
+        appConfig := AppConfig{}
+
+        dbDsn := fmt.Sprintf("postgres://%s:%s@%s:5432/%s?sslmode=disable", GetEnvar("DB_USER"), GetEnvar("POSTGRES_PASSWORD"), GetEnvar("DB_HOST"), GetEnvar("DB_NAME"))
+        log.Println("dbDsn", dbDsn)
+        appConfig.DbDsn = dbDsn
+
+        appConfig.TmdbConfig = TmdbConfig{APIKey: GetEnvar("TMDB_API_KEY"), BaseURL: GetEnvar("TMDB_BASE_URL"), BackloadHighWatermarkDate: GetEnvar("TMDB_BACKLOAD_HIGH_WATERMARK_DATE")}
+        return appConfig, nil
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package db
+
+import (
+        "context"
+        "github.com/jackc/pgx/v5"
+        "log"
+)
+
+func NewConnection(dsn string) (*pgx.Conn, context.Context) <span class="cov0" title="0">{
+        ctx := context.Background()
+        conn, err := pgx.Connect(ctx, dsn)
+
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalln("error connecting to db:", err)
+        }</span>
+        <span class="cov0" title="0">return conn, ctx</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">// Code generated by sqlc. DO NOT EDIT.
+// versions:
+//   sqlc v1.26.0
+
+package db
+
+import (
+        "context"
+
+        "github.com/jackc/pgx/v5"
+        "github.com/jackc/pgx/v5/pgconn"
+)
+
+type DBTX interface {
+        Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
+        Query(context.Context, string, ...interface{}) (pgx.Rows, error)
+        QueryRow(context.Context, string, ...interface{}) pgx.Row
+}
+
+func New(db DBTX) *Queries <span class="cov0" title="0">{
+        return &amp;Queries{db: db}
+}</span>
+
+type Queries struct {
+        db DBTX
+}
+
+func (q *Queries) WithTx(tx pgx.Tx) *Queries <span class="cov0" title="0">{
+        return &amp;Queries{
+                db: tx,
+        }
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">// Code generated by sqlc. DO NOT EDIT.
+// versions:
+//   sqlc v1.26.0
+// source: movie.sql
+
+package db
+
+import (
+        "context"
+
+        "github.com/jackc/pgx/v5/pgconn"
+)
+
+const getMovie = `-- name: GetMovie :one
+select id,
+       title,
+       release_date,
+       overview,
+       rating,
+       poster_url,
+       trailer_url,
+       raw_data
+from movies
+where id = $1
+`
+
+func (q *Queries) GetMovie(ctx context.Context, id int) (Movie, error) <span class="cov0" title="0">{
+        row := q.db.QueryRow(ctx, getMovie, id)
+        var i Movie
+        err := row.Scan(
+                &amp;i.ID,
+                &amp;i.Title,
+                &amp;i.ReleaseDate,
+                &amp;i.Overview,
+                &amp;i.Rating,
+                &amp;i.PosterUrl,
+                &amp;i.TrailerUrl,
+                &amp;i.RawData,
+        )
+        return i, err
+}</span>
+
+const insertMovie = `-- name: InsertMovie :execresult
+insert into movies (id, title, release_date, overview, rating, poster_url, trailer_url, raw_data)
+values ($1, $2, $3, $4, $5, $6, $7, $8)
+on conflict (id) do nothing
+`
+
+func (q *Queries) InsertMovie(ctx context.Context, arg Movie) (pgconn.CommandTag, error) <span class="cov0" title="0">{
+        return q.db.Exec(ctx, insertMovie,
+                arg.ID,
+                arg.Title,
+                arg.ReleaseDate,
+                arg.Overview,
+                arg.Rating,
+                arg.PosterUrl,
+                arg.TrailerUrl,
+                arg.RawData,
+        )
+}</span>
+
+const listMovies = `-- name: ListMovies :many
+select id,
+       title,
+       release_date,
+       overview,
+       rating,
+       poster_url,
+       trailer_url,
+       raw_data
+from movies
+order by release_date desc
+`
+
+func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) <span class="cov0" title="0">{
+        rows, err := q.db.Query(ctx, listMovies)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">defer rows.Close()
+        var items []Movie
+        for rows.Next() </span><span class="cov0" title="0">{
+                var i Movie
+                if err := rows.Scan(
+                        &amp;i.ID,
+                        &amp;i.Title,
+                        &amp;i.ReleaseDate,
+                        &amp;i.Overview,
+                        &amp;i.Rating,
+                        &amp;i.PosterUrl,
+                        &amp;i.TrailerUrl,
+                        &amp;i.RawData,
+                ); err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+                <span class="cov0" title="0">items = append(items, i)</span>
+        }
+        <span class="cov0" title="0">if err := rows.Err(); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return items, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">// Code generated by sqlc. DO NOT EDIT.
+// versions:
+//   sqlc v1.26.0
+// source: movieswatchedbyuser.sql
+
+package db
+
+import (
+        "context"
+)
+
+const getMoviesWatchedByUser = `-- name: GetMoviesWatchedByUser :many
+select user_id, movie_id, experience_stars
+from movies_watched_by_user
+where user_id = $1
+`
+
+func (q *Queries) GetMoviesWatchedByUser(ctx context.Context, userID int) ([]MoviesWatchedByUser, error) <span class="cov0" title="0">{
+        rows, err := q.db.Query(ctx, getMoviesWatchedByUser, userID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">defer rows.Close()
+        var items []MoviesWatchedByUser
+        for rows.Next() </span><span class="cov0" title="0">{
+                var i MoviesWatchedByUser
+                if err := rows.Scan(&amp;i.UserID, &amp;i.MovieID, &amp;i.ExperienceStars); err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+                <span class="cov0" title="0">items = append(items, i)</span>
+        }
+        <span class="cov0" title="0">if err := rows.Err(); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return items, nil</span>
+}
+
+const removeMovieWatchedByUser = `-- name: RemoveMovieWatchedByUser :exec
+delete
+from movies_watched_by_user
+where user_id = $1
+  and movie_id = $2
+`
+
+func (q *Queries) RemoveMovieWatchedByUser(ctx context.Context, userID int, movieID int) error <span class="cov0" title="0">{
+        _, err := q.db.Exec(ctx, removeMovieWatchedByUser, userID, movieID)
+        return err
+}</span>
+
+const upsertMovieWatchedByUser = `-- name: UpsertMovieWatchedByUser :exec
+INSERT INTO movies_watched_by_user (user_id, movie_id, experience_stars)
+VALUES ($1, $2, $3)
+ON CONFLICT (user_id, movie_id)
+    DO UPDATE SET experience_stars = EXCLUDED.experience_stars
+`
+
+func (q *Queries) UpsertMovieWatchedByUser(ctx context.Context, userID int, movieID int, experienceStars int) error <span class="cov0" title="0">{
+        _, err := q.db.Exec(ctx, upsertMovieWatchedByUser, userID, movieID, experienceStars)
+        return err
+}</span>
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">// Code generated by sqlc. DO NOT EDIT.
+// versions:
+//   sqlc v1.26.0
+// source: user.sql
+
+package db
+
+import (
+        "context"
+)
+
+const getUser = `-- name: GetUser :one
+select id, email, auth_token, expiry
+from users
+where email = $1
+`
+
+func (q *Queries) GetUser(ctx context.Context, email string) (User, error) <span class="cov0" title="0">{
+        row := q.db.QueryRow(ctx, getUser, email)
+        var i User
+        err := row.Scan(
+                &amp;i.ID,
+                &amp;i.Email,
+                &amp;i.AuthToken,
+                &amp;i.Expiry,
+        )
+        return i, err
+}</span>
+
+const upsertUser = `-- name: UpsertUser :one
+INSERT INTO users (email, auth_token, expiry)
+VALUES ($1, $2, NOW() + INTERVAL '24 hours') ON CONFLICT (email)
+DO
+UPDATE SET auth_token = $2, expiry = NOW() + INTERVAL '24 hours'
+    RETURNING id, email, auth_token, expiry
+`
+
+func (q *Queries) UpsertUser(ctx context.Context, email string, authToken string) (User, error) <span class="cov0" title="0">{
+        row := q.db.QueryRow(ctx, upsertUser, email, authToken)
+        var i User
+        err := row.Scan(
+                &amp;i.ID,
+                &amp;i.Email,
+                &amp;i.AuthToken,
+                &amp;i.Expiry,
+        )
+        return i, err
+}</span>
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package handlers
+
+import (
+        "fmt"
+        "github.com/gorilla/sessions"
+        db2 "github.com/koleaby4/next_movie_go/db"
+        "golang.org/x/crypto/bcrypt"
+        "html/template"
+        "log"
+        "net/http"
+)
+
+var cookieStore = sessions.NewCookieStore([]byte("DUMMY_SESSION_KEY"))
+
+func hashPassword(password []byte) ([]byte, error) <span class="cov0" title="0">{
+        bytes, err := bcrypt.GenerateFromPassword(password, 10)
+        return bytes, err
+}</span>
+
+func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        log.Println("POST /login")
+        email := r.FormValue("email")
+        password := []byte(r.FormValue("password"))
+
+        conn, ctx := db2.NewConnection(h.AppConfig.DbDsn)
+        defer conn.Close(ctx)
+
+        queries := db2.New(conn)
+        user, err := queries.GetUser(ctx, email)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Printf("error (%v) fetching user with email=%v\n", err, email)
+        }</span>
+
+        <span class="cov0" title="0">if user.ID == 0 </span><span class="cov0" title="0">{ // user does not exist
+                log.Println("User does not exist", user)
+                hashedPassword, err := hashPassword(password)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Println("Error hashing password", err)
+                        http.Error(w, err.Error(), http.StatusInternalServerError)
+                }</span>
+                <span class="cov0" title="0">user, err = queries.UpsertUser(ctx, email, string(hashedPassword))
+                if err != nil </span><span class="cov0" title="0">{
+                        http.Error(w, err.Error(), http.StatusInternalServerError)
+                        return
+                }</span>
+        } else<span class="cov0" title="0"> {
+                log.Println("User exists", user)
+                err = bcrypt.CompareHashAndPassword([]byte(user.AuthToken), password)
+                if err != nil </span><span class="cov0" title="0">{ // user exists, but password does not match
+                        fmt.Println("Passwords do not match")
+                        http.Redirect(w, r, "/login", http.StatusSeeOther)
+                        return
+                }</span> else<span class="cov0" title="0"> {
+                        fmt.Println("Passwords match")
+                }</span>
+        }
+
+        <span class="cov0" title="0">session, err := cookieStore.Get(r, "user-session")
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+        <span class="cov0" title="0">session.Values["UserID"] = user.ID
+        session.Values["AuthToken"] = user.AuthToken
+
+        err = session.Save(r, w)
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+        <span class="cov0" title="0">http.Redirect(w, r, "/most-popular-movies", http.StatusSeeOther)</span>
+}
+
+func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        log.Println("GET /login")
+        tmpl, err := template.ParseFiles("web/templates/login.html", "web/templates/_navbar.html")
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov0" title="0">session, err := cookieStore.Get(r, "user-session")
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov0" title="0">data := map[string]bool{
+                "IsLoggedIn": session.Values["AuthToken"] != nil,
+        }
+
+        err = tmpl.Execute(w, data)
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+}
+
+func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        session, err := cookieStore.Get(r, "user-session")
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov0" title="0">delete(session.Values, "AuthToken")
+
+        err = session.Save(r, w)
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov0" title="0">http.Redirect(w, r, "/login", http.StatusSeeOther)</span>
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package handlers
+
+import (
+        "github.com/koleaby4/next_movie_go"
+)
+
+type Handlers struct {
+        AppConfig next_movie_go.AppConfig
+}
+
+func New(cfg next_movie_go.AppConfig) *Handlers <span class="cov0" title="0">{
+        return &amp;Handlers{
+                AppConfig: cfg,
+        }
+}</span>
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package handlers
+
+import (
+        "github.com/koleaby4/next_movie_go/db"
+        "github.com/koleaby4/next_movie_go/tmdb"
+        "html/template"
+        "net/http"
+)
+
+func (h *Handlers) MostPopularMovies(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        movies, err := tmdb.GetMostPopularMovies(h.AppConfig.TmdbConfig, 8)
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov0" title="0">tmpl, err := template.ParseFiles("web/templates/movies.html", "web/templates/_navbar.html")
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov0" title="0">session, err := cookieStore.Get(r, "user-session")
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov0" title="0">data := struct {
+                IsLoggedIn bool
+                Movies     []db.Movie
+        }{
+                IsLoggedIn: session.Values["AuthToken"] != nil,
+                Movies:     movies,
+        }
+
+        err = tmpl.Execute(w, data)
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package handlers
+
+import (
+        "errors"
+        "github.com/jackc/pgx/v5"
+        db2 "github.com/koleaby4/next_movie_go/db"
+        "github.com/koleaby4/next_movie_go/tmdb"
+        "html/template"
+        "log"
+        "net/http"
+        "strconv"
+        "strings"
+)
+
+func (h *Handlers) MovieDetail(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        parts := strings.Split(r.URL.Path, "/")
+        movieIdStr := parts[len(parts)-1]
+        movieID, err := strconv.Atoi(movieIdStr)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Printf("error parsing movie id=%v; err=%v\n", movieIdStr, err)
+        }</span>
+
+        <span class="cov0" title="0">conn, ctx := db2.NewConnection(h.AppConfig.DbDsn)
+        defer conn.Close(ctx)
+
+        queries := db2.New(conn)
+
+        movie, err := queries.GetMovie(ctx, movieID)
+        if err != nil </span><span class="cov0" title="0">{
+                if errors.Is(err, pgx.ErrNoRows) </span><span class="cov0" title="0">{
+                        movie, err = tmdb.GetMovie(h.AppConfig.TmdbConfig, movieID)
+                        if err != nil </span><span class="cov0" title="0">{
+                                http.Error(w, err.Error(), http.StatusInternalServerError)
+                                return
+                        }</span>
+
+                        <span class="cov0" title="0">_, err = queries.InsertMovie(ctx, movie)
+                        if err != nil </span><span class="cov0" title="0">{
+                                http.Error(w, err.Error(), http.StatusInternalServerError)
+                                return
+                        }</span>
+
+                } else<span class="cov0" title="0"> {
+                        http.Error(w, err.Error(), http.StatusInternalServerError)
+                        return
+                }</span>
+        }
+
+        <span class="cov0" title="0">session, err := cookieStore.Get(r, "user-session")
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov0" title="0">data := struct {
+                IsLoggedIn bool
+                Movie      db2.Movie
+        }{
+                IsLoggedIn: session.Values["AuthToken"] != nil,
+                Movie:      movie,
+        }
+
+        tmpl, err := template.ParseFiles("web/templates/movie_detail.html", "web/templates/_watched_info_form.html", "web/templates/_navbar.html")
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov0" title="0">err = tmpl.Execute(w, data)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Println("error executing template", err)
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package handlers
+
+import (
+        "fmt"
+        "github.com/koleaby4/next_movie_go/db"
+        "net/http"
+        "strconv"
+        "strings"
+)
+
+func (h *Handlers) UpdateWatchedStatus(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        pathSegments := strings.Split(r.URL.Path, "/")
+        if len(pathSegments) &lt; 3 </span><span class="cov0" title="0">{
+                http.Error(w, "Invalid URL", http.StatusBadRequest)
+                return
+        }</span>
+        <span class="cov0" title="0">movieID, err := strconv.Atoi(pathSegments[2]) // Assuming the ID is the second segment
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusBadRequest)
+                return
+        }</span>
+
+        // Retrieve the user ID and opinion from the form data
+        <span class="cov0" title="0">session, err := cookieStore.Get(r, "user-session")
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+
+        // Retrieve the user ID from the session
+        <span class="cov0" title="0">userID, ok := session.Values["UserID"].(int)
+        if !ok </span><span class="cov0" title="0">{
+                http.Error(w, "User ID not found in session", http.StatusBadRequest)
+                fmt.Println("User needs to be logged in to update watched status")
+                http.Redirect(w, r, "/login", http.StatusSeeOther)
+                return
+        }</span>
+
+        <span class="cov0" title="0">conn, ctx := db.NewConnection(h.AppConfig.DbDsn)
+        defer conn.Close(ctx)
+
+        queries := db.New(conn)
+
+        // Use these values to update the watched status of the movie for the user in the database
+        opitions := map[string]int{
+                "liked":       3,
+                "neutral":     2,
+                "disliked":    1,
+                "not-watched": 0,
+        }
+
+        opinion, ok := opitions[r.FormValue("opinion")]
+        if !ok </span><span class="cov0" title="0">{
+                http.Error(w, "Invalid opinion", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov0" title="0">if opinion == 0 </span><span class="cov0" title="0">{
+                err = queries.RemoveMovieWatchedByUser(ctx, userID, movieID)
+        }</span> else<span class="cov0" title="0"> {
+                err = queries.UpsertMovieWatchedByUser(ctx, userID, movieID, opinion)
+        }</span>
+
+        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov0" title="0">http.Redirect(w, r, "/movies/"+strconv.Itoa(movieID), http.StatusSeeOther)</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
