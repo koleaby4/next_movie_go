@@ -81,7 +81,26 @@ jobs:
           go-version: 1.22
 
       - name: Run tests
-        run: go test -race -vet=off -coverprofile='c.out' ./...
+        run: go test -race -json -v -coverprofile=coverage.txt ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
 
-      - name: Run tests
-        run: go tool cover -html='c.out' -o coverage.html
+      - name: Convert go coverage to corbetura format
+        run: gocover-cobertura < coverage.txt > coverage.xml
+
+      - name: Generate code coverage report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: coverage.xml
+          badge: false
+          fail_below_min: false
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: '40 60'
+
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: code-coverage-results.md
