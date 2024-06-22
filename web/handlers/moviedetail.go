@@ -12,12 +12,15 @@ import (
 	"strings"
 )
 
+// MovieDetail handles the movie detail request
 func (h *Handlers) MovieDetail(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
-	movieIdStr := parts[len(parts)-1]
-	movieID, err := strconv.Atoi(movieIdStr)
+
+	idStr := parts[len(parts)-1]
+	movieID, err := strconv.Atoi(idStr)
+
 	if err != nil {
-		log.Printf("error parsing movie id=%v; err=%v\n", movieIdStr, err)
+		log.Printf("error parsing movie id=%v; err=%v\n", idStr, err)
 	}
 
 	conn, ctx := db2.NewConnection(h.AppConfig.DbDsn)
