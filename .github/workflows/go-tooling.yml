@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Go
+      - name: set up Go
         uses: actions/setup-go@v5
         with:
           go-version: 1.22
@@ -26,12 +26,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Go
+      - name: set up Go
         uses: actions/setup-go@v5
         with:
           go-version: 1.22
 
-      - name: Build
+      - name: build
         run: go build -v ./...
 
   go-vet:
@@ -57,16 +57,16 @@ jobs:
         with:
           go-version: 1.22
 
-      - name: Install staticcheck
+      - name: install staticcheck
         run: go install honnef.co/go/tools/cmd/staticcheck@latest
 
-      - name: Run staticcheck
+      - name: run staticcheck
         run: staticcheck ./...
 
-      - name: Install golint
+      - name: install golint
         run: go install golang.org/x/lint/golint@latest
 
-      - name: Run golint
+      - name: run golint
         run: golint ./...
 
 
@@ -80,19 +80,19 @@ jobs:
         with:
           go-version: 1.22
 
-      - name: Set up gotestfmt
+      - name: install gotestfmt
         run: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
 
-      - name: Get gocover-cobertura
+      - name: install gocover-cobertura
         run: go install github.com/boumenot/gocover-cobertura@latest
 
-      - name: Run tests
+      - name: run tests
         run: go test -race -json -v -coverprofile=coverage.txt ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
 
-      - name: Convert go coverage to corbetura format
+      - name: convert coverage to corbetura format
         run: gocover-cobertura < coverage.txt > coverage.xml
 
-      - name: Generate code coverage report
+      - name: generate code coverage report
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
           filename: coverage.xml
@@ -105,7 +105,7 @@ jobs:
           output: both
           thresholds: '40 60'
 
-      - name: Add Coverage PR Comment
+      - name: add coverage PR comment
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           recreate: true
