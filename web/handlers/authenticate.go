@@ -19,7 +19,6 @@ func hashPassword(password []byte) ([]byte, error) {
 
 // LoginPost handles the login POST request
 func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
-	log.Println("POST /login")
 	email := r.FormValue("email")
 	password := []byte(r.FormValue("password"))
 
