@@ -86,7 +86,7 @@ func LoadGoodMovies(ctx context.Context, queries *db2.Queries, cfg next_movie_go
 
 func main() {
 
-	appConfig, err := next_movie_go.GetAppConfig()
+	appConfig, err := next_movie_go.GetConfig()
 
 	if err != nil {
 		log.Fatalln("error reading config file", err)

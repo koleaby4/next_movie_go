@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	appConfig, err := next_movie_go.GetAppConfig()
+	appConfig, err := next_movie_go.GetConfig()
 	if err != nil {
 		log.Fatalln("error reading config file", err)
 	}

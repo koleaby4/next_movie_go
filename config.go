@@ -7,8 +7,8 @@ import (
 	"os"
 )
 
-// AppConfig is the configuration for the app
-type AppConfig struct {
+// Config is the configuration for the app
+type Config struct {
 	DbDsn      string
 	TmdbConfig TmdbConfig
 	SessionKey string
@@ -21,8 +21,7 @@ type TmdbConfig struct {
 	BackloadHighWatermarkDate string
 }
 
-// GetEnvar reads the environment variable
-func GetEnvar(key string) string {
+func getEnvar(key string) string {
 	err := godotenv.Load(".env")
 
 	if err != nil {
@@ -35,14 +34,13 @@ func GetEnvar(key string) string {
 	return ""
 }
 
-// GetAppConfig reads the config from a file
-func GetAppConfig() (AppConfig, error) {
-	appConfig := AppConfig{}
+// GetConfig reads the config from a file
+func GetConfig() (Config, error) {
+	cfg := Config{}
 
-	dbDsn := fmt.Sprintf("postgres://%s:%s@%s:5432/%s?sslmode=disable", GetEnvar("DB_USER"), GetEnvar("POSTGRES_PASSWORD"), GetEnvar("DB_HOST"), GetEnvar("DB_NAME"))
-	log.Println("dbDsn", dbDsn)
-	appConfig.DbDsn = dbDsn
+	dbDsn := fmt.Sprintf("postgres://%s:%s@%s:5432/%s?sslmode=disable", getEnvar("DB_USER"), getEnvar("POSTGRES_PASSWORD"), getEnvar("DB_HOST"), getEnvar("DB_NAME"))
+	cfg.DbDsn = dbDsn
 
-	appConfig.TmdbConfig = TmdbConfig{APIKey: GetEnvar("TMDB_API_KEY"), BaseURL: GetEnvar("TMDB_BASE_URL"), BackloadHighWatermarkDate: GetEnvar("TMDB_BACKLOAD_HIGH_WATERMARK_DATE")}
-	return appConfig, nil
+	cfg.TmdbConfig = TmdbConfig{APIKey: getEnvar("TMDB_API_KEY"), BaseURL: getEnvar("TMDB_BASE_URL"), BackloadHighWatermarkDate: getEnvar("TMDB_BACKLOAD_HIGH_WATERMARK_DATE")}
+	return cfg, nil
 }
