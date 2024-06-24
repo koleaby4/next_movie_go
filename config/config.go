@@ -7,12 +7,14 @@ import (
 	"os"
 )
 
+// Config holds the configuration for the application
 type Config struct {
 	DbDsn      string
 	TmdbConfig TmdbConfig
 	SessionKey string
 }
 
+// TmdbConfig holds the configuration for the TMDB API
 type TmdbConfig struct {
 	APIKey                    string
 	BaseURL                   string
@@ -27,6 +29,7 @@ func getEnvar(key string) (string, error) {
 	return val, nil
 }
 
+// GetConfig reads the configuration from the environment variables
 func GetConfig() (Config, error) {
 	err := godotenv.Load(`.env`)
 	if err != nil {
