@@ -10,12 +10,14 @@ RUN go mod download
 ENV GOOS=linux
 ENV GOARCH=amd64
 
-RUN go build -o main ./cmd/web
+RUN go build ./cmd/web
 
-RUN chmod +x /app/main
+RUN chmod +x ./web
+
+RUN ls -la
 
 COPY . .
 
 EXPOSE 8080
 
-CMD ["./main"]
+CMD ["./web"]
