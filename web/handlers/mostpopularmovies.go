@@ -9,7 +9,7 @@ import (
 
 // MostPopularMovies handles the most popular movies request
 func (h *Handlers) MostPopularMovies(w http.ResponseWriter, r *http.Request) {
-	movies, err := tmdb.GetMostPopularMovies(h.AppConfig.TmdbConfig, 8)
+	movies, err := tmdb.GetMostPopularMovies(h.Config.TmdbConfig, 8)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

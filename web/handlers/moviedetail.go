@@ -23,7 +23,7 @@ func (h *Handlers) MovieDetail(w http.ResponseWriter, r *http.Request) {
 		log.Printf("error parsing movie id=%v; err=%v\n", idStr, err)
 	}
 
-	conn, ctx := db2.NewConnection(h.AppConfig.DbDsn)
+	conn, ctx := db2.NewConnection(h.Config.DbDsn)
 	defer conn.Close(ctx)
 
 	queries := db2.New(conn)
@@ -31,7 +31,7 @@ func (h *Handlers) MovieDetail(w http.ResponseWriter, r *http.Request) {
 	movie, err := queries.GetMovie(ctx, movieID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			movie, err = tmdb.GetMovie(h.AppConfig.TmdbConfig, movieID)
+			movie, err = tmdb.GetMovie(h.Config.TmdbConfig, movieID)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return

@@ -1,17 +1,18 @@
 package handlers
 
 import (
-	"github.com/koleaby4/next_movie_go"
+	"github.com/koleaby4/next_movie_go/config"
+	"github.com/koleaby4/next_movie_go/db"
 )
 
-// Handlers is the struct for the handlers
 type Handlers struct {
-	AppConfig next_movie_go.Config
+	Config  config.Config
+	Queries *db.Queries
 }
 
-// New creates a new Handlers struct
-func New(cfg next_movie_go.Config) *Handlers {
+func New(cfg config.Config, queries *db.Queries) *Handlers {
 	return &Handlers{
-		AppConfig: cfg,
+		Config:  cfg,
+		Queries: queries,
 	}
 }

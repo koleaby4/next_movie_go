@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/koleaby4/next_movie_go"
-	db2 "github.com/koleaby4/next_movie_go/db"
+	"github.com/koleaby4/next_movie_go/config"
+	"github.com/koleaby4/next_movie_go/db"
 	"github.com/koleaby4/next_movie_go/tmdb"
+	"github.com/koleaby4/next_movie_go/web/handlers"
 	"log"
 	"os"
 	"regexp"
@@ -48,7 +49,7 @@ import (
 //}
 
 // LoadGoodMovies loads good movies
-func LoadGoodMovies(ctx context.Context, queries *db2.Queries, cfg next_movie_go.TmdbConfig) (time.Time, error) {
+func LoadGoodMovies(ctx context.Context, queries *db.Queries, cfg config.TmdbConfig) (time.Time, error) {
 	from, err := time.Parse("2006-01-02", cfg.BackloadHighWatermarkDate)
 	if err != nil {
 		return time.Time{}, err
@@ -86,18 +87,19 @@ func LoadGoodMovies(ctx context.Context, queries *db2.Queries, cfg next_movie_go
 
 func main() {
 
-	appConfig, err := next_movie_go.GetConfig()
-
+	cfg, err := config.GetConfig()
 	if err != nil {
 		log.Fatalln("error reading config file", err)
 	}
 
-	conn, ctx := db2.NewConnection(appConfig.DbDsn)
+	conn, ctx := db.NewConnection(cfg.DbDsn)
 	defer conn.Close(ctx)
 
-	queries := db2.New(conn)
+	queries := db.New(conn)
 
-	watermarkDate, err := LoadGoodMovies(ctx, queries, appConfig.TmdbConfig)
+	h := handlers.New(cfg, queries)
+
+	watermarkDate, err := LoadGoodMovies(ctx, h.Queries, cfg.TmdbConfig)
 	if err != nil {
 		log.Fatalln("error in LoadGoodMovies", err)
 	}

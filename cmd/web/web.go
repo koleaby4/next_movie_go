@@ -1,19 +1,25 @@
 package main
 
 import (
-	"github.com/koleaby4/next_movie_go"
+	"github.com/koleaby4/next_movie_go/config"
+	"github.com/koleaby4/next_movie_go/db"
 	"github.com/koleaby4/next_movie_go/web/handlers"
 	"log"
 	"net/http"
 )
 
 func main() {
-	appConfig, err := next_movie_go.GetConfig()
+	appConfig, err := config.GetConfig()
 	if err != nil {
 		log.Fatalln("error reading config file", err)
 	}
 
-	h := handlers.New(appConfig)
+	conn, ctx := db.NewConnection(appConfig.DbDsn)
+	defer conn.Close(ctx)
+
+	queries := db.New(conn)
+
+	h := handlers.New(appConfig, queries)
 
 	http.HandleFunc("/most-popular-movies", h.MostPopularMovies)
 	http.HandleFunc("/movies/{movie_id}", h.MovieDetail)

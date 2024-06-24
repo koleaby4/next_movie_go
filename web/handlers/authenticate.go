@@ -22,7 +22,7 @@ func (h *Handlers) LoginPost(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	password := []byte(r.FormValue("password"))
 
-	conn, ctx := db2.NewConnection(h.AppConfig.DbDsn)
+	conn, ctx := db2.NewConnection(h.Config.DbDsn)
 	defer conn.Close(ctx)
 
 	queries := db2.New(conn)

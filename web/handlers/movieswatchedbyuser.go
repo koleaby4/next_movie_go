@@ -37,7 +37,7 @@ func (h *Handlers) UpdateWatchedStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn, ctx := db.NewConnection(h.AppConfig.DbDsn)
+	conn, ctx := db.NewConnection(h.Config.DbDsn)
 	defer conn.Close(ctx)
 
 	queries := db.New(conn)
