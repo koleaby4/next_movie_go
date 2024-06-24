@@ -10,11 +10,13 @@ RUN go mod download
 ENV GOOS=linux
 ENV GOARCH=amd64
 
-RUN go build ./cmd/web
+RUN ls -ahl
+
+RUN go build ./cmd/web/
+
 
 RUN chmod +x ./web
 
-RUN ls -la
 
 COPY . .
 
