@@ -31,6 +31,7 @@ func TestGetConfig(t *testing.T) {
 	}
 
 	setEnvars(envars)
+	defer unsetEnvars(envars)
 
 	cfg, err := GetConfig()
 
@@ -40,6 +41,4 @@ func TestGetConfig(t *testing.T) {
 	assert.Equal(t, "testapikey", cfg.TmdbConfig.APIKey)
 	assert.Equal(t, "testbaseurl", cfg.TmdbConfig.BaseURL)
 	assert.Equal(t, "2023-01-28", cfg.TmdbConfig.BackloadHighWatermarkDate)
-
-	unsetEnvars(envars)
 }
