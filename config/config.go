@@ -5,6 +5,8 @@ import (
 	"github.com/joho/godotenv"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 )
 
 // Config holds the configuration for the application
@@ -21,6 +23,12 @@ type TmdbConfig struct {
 	BackloadHighWatermarkDate string
 }
 
+func getProjectRoot() (string, error) {
+	_, b, _, _ := runtime.Caller(0)
+	dir := filepath.Join(filepath.Dir(b), "..")
+	return filepath.Abs(dir)
+}
+
 func getEnvar(key string) (string, error) {
 	val := os.Getenv(key)
 	if val == "" {
@@ -31,7 +39,15 @@ func getEnvar(key string) (string, error) {
 
 // GetConfig reads the configuration from the environment variables
 func GetConfig() (Config, error) {
-	err := godotenv.Load(`.env`, `.env.local`)
+	projectRoot, err := getProjectRoot()
+	if err != nil {
+		return Config{}, err
+	}
+
+	envPath := filepath.Join(projectRoot, ".env")
+	localEnvPath := filepath.Join(projectRoot, ".env.local")
+
+	err = godotenv.Load(envPath, localEnvPath)
 	if err != nil {
 		log.Println("Error loading .env file", err)
 		return Config{}, err
