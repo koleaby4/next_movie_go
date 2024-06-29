@@ -10,16 +10,12 @@ RUN go mod download
 ENV GOOS=linux
 ENV GOARCH=amd64
 
-RUN ls -ahl
-
-RUN go build ./cmd/web/
-
-
-RUN chmod +x ./web
-
-
 COPY . .
+
+
+RUN go build -o runner ./cmd/web
+RUN chmod +x /app/runner
 
 EXPOSE 8080
 
-CMD ["./web"]
+CMD ["./runner"]
