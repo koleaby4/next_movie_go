@@ -41,4 +41,5 @@ func TestGetConfig(t *testing.T) {
 	assert.Equal(t, "testbaseurl", cfg.TmdbConfig.BaseURL)
 	assert.Equal(t, "2023-01-28", cfg.TmdbConfig.BackloadHighWatermarkDate)
 
+	unsetEnvars(envars)
 }
