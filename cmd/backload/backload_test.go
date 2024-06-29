@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -29,7 +28,7 @@ func TestUpdateHighWatermark(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	data, err := ioutil.ReadFile(tempFile.Name())
+	data, err := os.ReadFile(tempFile.Name())
 	if err != nil {
 		t.Fatal(err)
 	}
