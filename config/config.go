@@ -31,7 +31,7 @@ func getEnvar(key string) (string, error) {
 
 // GetConfig reads the configuration from the environment variables
 func GetConfig() (Config, error) {
-	err := godotenv.Load(`.env`)
+	err := godotenv.Load(`.env`, `.env.local`)
 	if err != nil {
 		log.Println("Error loading .env file", err)
 		return Config{}, err
