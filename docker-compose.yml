@@ -6,6 +6,9 @@ services:
       - "8080:8080"
     env_file:
       - .env
+      - .env.docker
+    depends_on:
+      - db
     environment:
       - DB_DSN=postgres://${DB_USER}:${POSTGRES_PASSWORD}@db:5432/${DB_NAME}?sslmode=disable
       - TMDB_API_KEY=${TMDB_API_KEY}
