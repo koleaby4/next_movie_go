@@ -7,6 +7,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func setEnvars(envars map[string]string) {
+	for k, v := range envars {
+		os.Setenv(k, v)
+	}
+}
+
+func unsetEnvars(envars map[string]string) {
+	for k := range envars {
+		os.Unsetenv(k)
+	}
+}
+
 func TestGetConfig(t *testing.T) {
 	envars := map[string]string{
 		"DB_USER":                           "testuser",
@@ -18,9 +30,7 @@ func TestGetConfig(t *testing.T) {
 		"TMDB_BACKLOAD_HIGH_WATERMARK_DATE": "2023-01-28",
 	}
 
-	for k, v := range envars {
-		os.Setenv(k, v)
-	}
+	setEnvars(envars)
 
 	cfg, err := GetConfig()
 
@@ -31,7 +41,4 @@ func TestGetConfig(t *testing.T) {
 	assert.Equal(t, "testbaseurl", cfg.TmdbConfig.BaseURL)
 	assert.Equal(t, "2023-01-28", cfg.TmdbConfig.BackloadHighWatermarkDate)
 
-	for k := range envars {
-		os.Unsetenv(k)
-	}
 }
