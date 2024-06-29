@@ -13,41 +13,6 @@ import (
 	"time"
 )
 
-//func playWithUsersTable(dsn string) {
-//	fmt.Println("starting playWithUsersTable...")
-//
-//	ctx := context.Background()
-//	conn := db.NewConnection(dsn, ctx)
-//	defer conn.Close(ctx)
-//
-//	queries := db.New(conn)
-//
-//	alexResult, err := queries.CreateUser(ctx, "alexResult@gmail.com")
-//	if err != nil {
-//		log.Fatalln("error creating user alexResult:", err)
-//	}
-//	log.Println("user alexResult:", alexResult)
-//
-//	fmt.Println("finished playWithUsersTable")
-//
-//}
-
-//func playWithMoviesTable(dsn string) {
-//	fmt.Println("starting playWithMoviesTable...")
-//	ctx := context.Background()
-//	conn := db2.NewConnection(dsn, ctx)
-//	defer conn.Close(ctx)
-//
-//	queries := db2.New(conn)
-//	matrixResult, err := queries.InsertMovie(ctx, db2.Movie{ID: 123, Title: "Matrix"})
-//	if err != nil {
-//		return
-//	}
-//	log.Println("movie matrixResult:", matrixResult)
-//
-//	fmt.Println("finished playWithMoviesTable")
-//}
-
 // LoadGoodMovies loads good movies
 func LoadGoodMovies(ctx context.Context, queries *db.Queries, cfg config.TmdbConfig) (time.Time, error) {
 	from, err := time.Parse("2006-01-02", cfg.BackloadHighWatermarkDate)
@@ -130,16 +95,3 @@ func updateHighWatermark(newWatermark time.Time, configPath string) error {
 
 	return nil
 }
-
-//func playWithMostPopularMovies(cfg config.TmdbConfig, minRating float64) {
-//	mostPopularMovies, err := tmdb.GetMostPopularMovies(cfg, minRating)
-//
-//	if err != nil {
-//		log.Fatalln("error getting most popular movies", err)
-//	}
-//
-//	fmt.Println("number of most popular movies fetched:", len(mostPopularMovies))
-//	for _, movie := range mostPopularMovies {
-//		fmt.Println(movie.Title, movie.Rating, movie.PosterUrl, movie.TrailerUrl)
-//	}
-//}
